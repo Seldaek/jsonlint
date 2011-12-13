@@ -20,13 +20,15 @@ if (!isset($_SERVER['argv'][1])) {
 }
 
 $file = $_SERVER['argv'][1];
-if (!file_exists($file)) {
-    echo 'File not found: '.$file.PHP_EOL;
-    exit(1);
-}
-if (!is_readable($file)) {
-    echo 'File not readable: '.$file.PHP_EOL;
-    exit(1);
+if (!preg_match('{^https?://}i', $file)) {
+    if (!file_exists($file)) {
+        echo 'File not found: '.$file.PHP_EOL;
+        exit(1);
+    }
+    if (!is_readable($file)) {
+        echo 'File not readable: '.$file.PHP_EOL;
+        exit(1);
+    }
 }
 
 $parser = new JsonParser();
