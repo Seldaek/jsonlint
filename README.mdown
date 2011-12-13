@@ -8,6 +8,8 @@ Usage
 
     use Seld\JsonLint\JsonParser;
 
+    $parser = new JsonParser();
+    
     // returns null if it's valid json, or a ParsingException object. Call
     // ->getDetails() on the exception to get more info.
     $parser->lint($json);
