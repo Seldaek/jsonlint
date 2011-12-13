@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the JsonLint package.
+ * This file is part of the JSON Lint package.
  *
  * (c) Jordi Boggiano <j.boggiano@seld.be>
  *

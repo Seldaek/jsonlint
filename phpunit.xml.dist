@@ -12,7 +12,7 @@
          bootstrap="tests/bootstrap.php"
 >
     <testsuites>
-        <testsuite name="JsonLint Test Suite">
+        <testsuite name="JSON Lint Test Suite">
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>

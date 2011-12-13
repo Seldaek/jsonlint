@@ -2,7 +2,7 @@
 <?php
 
 /*
- * This file is part of the JsonLint package.
+ * This file is part of the JSON Lint package.
  *
  * (c) Jordi Boggiano <j.boggiano@seld.be>
  *
@@ -30,5 +30,8 @@ if (!is_readable($file)) {
 }
 
 $parser = new JsonParser();
-$parser->parse(file_get_contents($file));
+if ($err = $parser->lint(file_get_contents($file))) {
+    echo $err->getMessage().PHP_EOL;
+    exit(1);
+}
 echo 'Valid JSON'.PHP_EOL;

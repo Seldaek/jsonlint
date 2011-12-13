@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the JsonLint package.
+ * This file is part of the JSON Lint package.
  *
  * (c) Jordi Boggiano <j.boggiano@seld.be>
  *
@@ -19,10 +19,10 @@ use stdClass;
  * Example:
  *
  * $parser = new JsonParser();
- * // returns parsed json, like json_decode does, but slower, throws exceptions on failure.
- * $parser->parse($json);
  * // returns null if it's valid json, or an error object
  * $parser->lint($json);
+ * // returns parsed json, like json_decode does, but slower, throws exceptions on failure.
+ * $parser->parse($json);
  *
  * Ported from https://github.com/zaach/jsonlint
  */
@@ -110,6 +110,24 @@ class JsonParser
         16 => array(2, 6)
     );
 
+    /**
+     * @param string $input JSON string
+     * @return null|ParsingException null if no error is found, a ParsingException containing all details otherwise
+     */
+    public function lint($input)
+    {
+        try {
+            $this->parse($input);
+        } catch (ParsingException $e) {
+            return $e;
+        }
+    }
+
+    /**
+     * @param string $input JSON string
+     * @return mixed
+     * @throws ParsingException
+     */
     public function parse($input)
     {
         $this->stack = array(0);
@@ -168,7 +186,7 @@ class JsonParser
                         }
                     }
 
-                    $errStr = 'Parse error on line ' . ($yylineno+1) . ":\n" . $this->lexer->showPosition() . "\nExpecting " . implode(', ', $expected);
+                    $errStr = 'Parse error on line ' . ($yylineno+1) . ":\n" . $this->lexer->showPosition() . "\nExpected one of: " . implode(', ', $expected);
                     $this->parseError($errStr, array(
                         'text' => $this->lexer->match,
                         'token' => !empty($this->terminals_[$symbol]) ? $this->terminals_[$symbol] : $symbol,
@@ -181,7 +199,7 @@ class JsonParser
                 // just recovered from another error
                 if ($recovering == 3) {
                     if ($symbol == $EOF) {
-                        throw new \Exception($errStr ?: 'Parsing halted.');
+                        throw new ParsingException($errStr ?: 'Parsing halted.');
                     }
 
                     // discard current lookahead and grab another
@@ -199,7 +217,7 @@ class JsonParser
                         break;
                     }
                     if ($state == 0) {
-                        throw new \Exception($errStr ?: 'Parsing halted.');
+                        throw new ParsingException($errStr ?: 'Parsing halted.');
                     }
                     $this->popStack(1);
                     $state = $this->stack[count($this->stack)-1];
@@ -214,7 +232,7 @@ class JsonParser
 
             // this shouldn't happen, unless resolve defaults are off
             if (is_array($action[0]) && count($action) > 1) {
-                throw new \Exception('Parse Error: multiple actions possible at state: ' . $state . ', token: ' . $symbol);
+                throw new ParsingException('Parse Error: multiple actions possible at state: ' . $state . ', token: ' . $symbol);
             }
 
             switch ($action[0]) {
@@ -276,7 +294,7 @@ class JsonParser
 
     protected function parseError($str, $hash)
     {
-        throw new \Exception($str);
+        throw new ParsingException($str, $hash);
     }
 
     // $$ = $tokens // needs to be passed by ref?
