@@ -1,0 +1,43 @@
+JSON Lint
+=========
+
+[![Build Status](https://secure.travis-ci.org/Seldaek/jsonlint.png)](http://travis-ci.org/Seldaek/jsonlint)
+
+Usage
+-----
+
+    use Seld\JsonLint\JsonParser;
+
+    // returns null if it's valid json, or a ParsingException object. Call
+    // ->getDetails() on the exception to get more info.
+    $parser->lint($json);
+
+    // returns parsed json, like json_decode() does, but slower, throws
+    // exceptions on failure.
+    $parser->parse($json);
+
+Requirements
+------------
+
+- PHP 5.3+
+- [optional] PHPUnit 3.5+ to execute the test suite (phpunit --version)
+
+Submitting bugs and feature requests
+------------------------------------
+
+Bugs and feature request are tracked on [GitHub](https://github.com/Seldaek/jsonlint/issues)
+
+Author
+------
+
+Jordi Boggiano - <j.boggiano@seld.be> - <http://twitter.com/seldaek>
+
+License
+-------
+
+JSON Lint is licensed under the MIT License - see the LICENSE file for details
+
+Acknowledgements
+----------------
+
+This library is a port of the JavaScript [jsonlint](https://github.com/zaach/jsonlint) library.
