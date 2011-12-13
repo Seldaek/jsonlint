@@ -16,6 +16,15 @@ Usage
     // exceptions on failure.
     $parser->parse($json);
 
+Installation
+------------
+
+JSON Lint can easily be used within another app if you have a PSR-0 autoloader, or
+it can be installed through [Composer](http://packagist.org/) for use as a CLI util.
+Once installed via Composer you can run the following command to lint a json file or URL:
+
+    $ bin/jsonlint file.json
+
 Requirements
 ------------
 
