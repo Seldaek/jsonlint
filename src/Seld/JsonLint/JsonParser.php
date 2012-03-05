@@ -337,7 +337,8 @@ class JsonParser
             break;
         case 16:
             $yyval->token = new stdClass;
-            $yyval->token->{$tokens[$len][0]} = $tokens[$len][1];
+            $property = $tokens[$len][0] === '' ? '_empty_' : $tokens[$len][0];
+            $yyval->token->$property = $tokens[$len][1];
             break;
         case 17:
             $yyval->token = $tokens[$len-2];
