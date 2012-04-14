@@ -186,7 +186,11 @@ class JsonParser
                         }
                     }
 
-                    $errStr = 'Parse error on line ' . ($yylineno+1) . ":\n" . $this->lexer->showPosition() . "\nExpected one of: " . implode(', ', $expected);
+                    $errStr = 'Parse error on line ' . ($yylineno+1) . ":\n";
+                    $errStr .= $this->lexer->showPosition() . "\n";
+                    $errStr .= (count($expected) > 1) ? "Expected one of: " : "Expected: ";
+                    $errStr .= implode(', ', $expected);
+
                     $this->parseError($errStr, array(
                         'text' => $this->lexer->match,
                         'token' => !empty($this->terminals_[$symbol]) ? $this->terminals_[$symbol] : $symbol,
