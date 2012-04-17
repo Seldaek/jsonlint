@@ -10,7 +10,14 @@
  * file that was distributed with this source code.
  */
 
-if ((!@include __DIR__.'/../../../.composer/autoload.php') && (!@include __DIR__.'/../vendor/.composer/autoload.php')) {
+function includeIfExists($file)
+{
+    if (file_exists($file)) {
+        return include $file;
+    }
+}
+
+if ((!$loader = includeIfExists(__DIR__.'/../vendor/.composer/autoload.php')) && (!$loader = includeIfExists(__DIR__.'/../../../.composer/autoload.php'))) {
     die('You must set up the project dependencies, run the following commands:'.PHP_EOL.
         'curl -s http://getcomposer.org/installer | php'.PHP_EOL.
         'php composer.phar install'.PHP_EOL);
@@ -19,6 +26,10 @@ if ((!@include __DIR__.'/../../../.composer/autoload.php') && (!@include __DIR__
 use Seld\JsonLint\JsonParser;
 
 if (!isset($_SERVER['argv'][1])) {
+    if ($contents = file_get_contents('php://stdin')) {
+        lint($contents);
+    }
+
     echo 'Usage: jsonlint file'.PHP_EOL;
     exit;
 }
@@ -35,9 +46,15 @@ if (!preg_match('{^https?://}i', $file)) {
     }
 }
 
-$parser = new JsonParser();
-if ($err = $parser->lint(file_get_contents($file))) {
-    echo $err->getMessage().PHP_EOL;
-    exit(1);
+lint(file_get_contents($file));
+
+function lint($content)
+{
+    $parser = new JsonParser();
+    if ($err = $parser->lint($content)) {
+        echo $err->getMessage().PHP_EOL;
+        exit(1);
+    }
+    echo 'Valid JSON'.PHP_EOL;
+    exit(0);
 }
-echo 'Valid JSON'.PHP_EOL;
