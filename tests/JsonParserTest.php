@@ -10,6 +10,7 @@
  */
 
 use Seld\JsonLint\JsonParser;
+use Seld\JsonLint\ParsingException;
 
 class JsonParserTest extends PHPUnit_Framework_TestCase
 {
@@ -28,6 +29,7 @@ class JsonParserTest extends PHPUnit_Framework_TestCase
         '{"test":"http:\/\/foo\\\\zomg"}',
         '["http:\/\/foo\\\\zomg"]',
         '{"":"foo"}',
+        '{"a":"b", "b":"c"}',
     );
 
     /**
@@ -53,6 +55,18 @@ class JsonParserTest extends PHPUnit_Framework_TestCase
         $parser = new JsonParser();
         foreach ($this->json as $input) {
             $this->assertEquals(json_decode($input), $parser->parse($input));
+        }
+    }
+
+    public function testDetectsKeyOverrides()
+    {
+        $parser = new JsonParser();
+
+        try {
+            $parser->parse('{"a":"b", "a":"c"}', JsonParser::DETECT_KEY_CONFLICTS);
+            $this->fail('Duplicate keys should not be allowed');
+        } catch (ParsingException $e) {
+            $this->assertContains('Duplicate key: a', $e->getMessage());
         }
     }
 }

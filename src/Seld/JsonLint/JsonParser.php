@@ -28,6 +28,9 @@ use stdClass;
  */
 class JsonParser
 {
+    const DETECT_KEY_CONFLICTS = 1;
+
+    private $flags;
     private $stack;
     private $vstack; // semantic value stack
     private $lstack; // location stack
@@ -128,8 +131,10 @@ class JsonParser
      * @return mixed
      * @throws ParsingException
      */
-    public function parse($input)
+    public function parse($input, $flags = 0)
     {
+        $this->flags = $flags;
+
         $this->stack = array(0);
         $this->vstack = array(null);
         $this->lstack = array();
@@ -304,12 +309,13 @@ class JsonParser
     // $$ = $tokens // needs to be passed by ref?
     // $ = $token
     // _$ removed, useless?
-    private function performAction(stdClass $yyval, $yytext, $yyleng, $yylineno, $yystate, &$tokens) {
+    private function performAction(stdClass $yyval, $yytext, $yyleng, $yylineno, $yystate, &$tokens)
+    {
         // $0 = $len
         $len = count($tokens) - 1;
         switch ($yystate) {
         case 1:
-            $yytext =preg_replace_callback('{(?:\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4})}', array($this, 'stringInterpolation'), $yytext);
+            $yytext = preg_replace_callback('{(?:\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4})}', array($this, 'stringInterpolation'), $yytext);
             $yyval->token = $yytext;
             break;
         case 2:
@@ -346,6 +352,12 @@ class JsonParser
             break;
         case 17:
             $yyval->token = $tokens[$len-2];
+            if (($this->flags & self::DETECT_KEY_CONFLICTS) && isset($tokens[$len-2]->{$tokens[$len][0]})) {
+                $errStr = 'Parse error on line ' . ($yylineno+1) . ":\n";
+                $errStr .= $this->lexer->showPosition() . "\n";
+                $errStr .= "Duplicate key: ".$tokens[$len][0];
+                throw new ParsingException($errStr);
+            }
             $tokens[$len-2]->{$tokens[$len][0]} = $tokens[$len][1];
             break;
         case 18:
