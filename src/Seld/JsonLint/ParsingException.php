@@ -11,18 +11,31 @@
 
 namespace Seld\JsonLint;
 
+/**
+ *
+ */
 class ParsingException extends \Exception
 {
-    protected $details;
+    /**
+     * @var array
+     */
+    protected $_details;
 
+    /**
+     * @param string $message
+     * @param array  $details
+     */
     public function __construct($message, $details = array())
     {
-        $this->details = $details;
+        $this->_details = $details;
         parent::__construct($message);
     }
 
+    /**
+     * @return array
+     */
     public function getDetails()
     {
-        return $this->details;
+        return $this->_details;
     }
 }
