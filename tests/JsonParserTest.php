@@ -14,7 +14,10 @@ use Seld\JsonLint\ParsingException;
 
 class JsonParserTest extends PHPUnit_Framework_TestCase
 {
-    protected $json = array(
+    /**
+     * @var array
+     */
+    protected $_validJsonStrings = array(
         '42', '42.3', '0.3', '-42', '-42.3', '-0.3',
         '2e1', '2E1', '-2e1', '-2E1', '2E+2', '2E-2', '-2E+2', '-2E-2',
         'true', 'false', 'null', '""', '[]', '{}', '"string"',
@@ -41,23 +44,32 @@ class JsonParserTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(json_decode($input), $parser->parse($input));
     }
 
+    /**
+     * @return array
+     */
     public function provideValidStrings()
     {
         $strings = array();
-        foreach ($this->json as $input) {
+        foreach ($this->_validJsonStrings as $input) {
             $strings[] = array($input);
         }
         return $strings;
     }
 
+    /**
+     *
+     */
     public function testParsesMultiInARow()
     {
         $parser = new JsonParser();
-        foreach ($this->json as $input) {
+        foreach ($this->_validJsonStrings as $input) {
             $this->assertEquals(json_decode($input), $parser->parse($input));
         }
     }
 
+    /**
+     *
+     */
     public function testDetectsKeyOverrides()
     {
         $parser = new JsonParser();

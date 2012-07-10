@@ -9,5 +9,5 @@
  * file that was distributed with this source code.
  */
 
-$loader = require __DIR__.'/../vendor/.composer/autoload.php';
+$loader = require __DIR__.'/../vendor/autoload.php';
 $loader->add('Seld\JsonLint\Test', __DIR__);
