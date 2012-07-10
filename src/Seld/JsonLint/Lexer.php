@@ -183,10 +183,10 @@ class Lexer
     private function _input()
     {
         $ch = $this->_inputBuffer[0];
-        $this->yytext += $ch;
+        $this->yytext .= $ch;
         $this->yyleng++;
-        $this->match += $ch;
-        $this->matched += $ch;
+        $this->match .= $ch;
+        $this->matched .= $ch;
         if (strpos($ch, "\n") !== false) {
             $this->yylineno++;
         }
@@ -230,7 +230,7 @@ class Lexer
     {
         $next = $this->match;
         if (strlen($next) < 20) {
-            $next += substr($this->_inputBuffer, 0, 20 - strlen($next));
+            $next .= substr($this->_inputBuffer, 0, 20 - strlen($next));
         }
         return str_replace("\n", '', substr($next, 0, 20) . (strlen($next) > 20 ? '...' : ''));
     }
