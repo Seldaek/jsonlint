@@ -76,32 +76,6 @@ class Lexer
         throw new \Exception($str);
     }
 
-    private function input()
-    {
-        $ch = $this->_input[0];
-        $this->yytext += $ch;
-        $this->yyleng++;
-        $this->match += $ch;
-        $this->matched += $ch;
-        if (strpos($ch, "\n") !== false) {
-            $this->yylineno++;
-        }
-        array_shift($this->_input); // slice(1)
-        return $ch;
-    }
-
-    private function unput($ch)
-    {
-        $this->_input = $ch . $this->_input;
-        return $this;
-    }
-
-    private function more()
-    {
-        $this->_more = true;
-        return $this;
-    }
-
     private function pastInput()
     {
         $past = substr($this->matched, 0, strlen($this->matched) - strlen($this->match));
