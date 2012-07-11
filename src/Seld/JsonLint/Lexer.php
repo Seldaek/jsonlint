@@ -86,7 +86,7 @@ class Lexer
     {
         $next = $this->match;
         if (strlen($next) < 20) {
-            $next += substr($this->_input, 0, 20 - strlen($next));
+            $next .= substr($this->_input, 0, 20 - strlen($next));
         }
         return str_replace("\n", '', substr($next, 0, 20) . (strlen($next) > 20 ? '...' : ''));
     }
