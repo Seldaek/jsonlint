@@ -43,6 +43,21 @@ class Lexer
         ),
     );
 
+    private $conditionStack;
+
+    public $_input;
+
+    public $_more;
+    public $_less;
+    public $done;
+    public $matched;
+    public $match;
+
+    public $yylineno;
+    public $yyleng;
+    public $yytext;
+    public $yylloc;
+
     public function lex()
     {
         $r = $this->next();
