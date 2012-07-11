@@ -47,6 +47,7 @@ class JsonParserTest extends PHPUnit_Framework_TestCase
         foreach ($this->json as $input) {
             $strings[] = array($input);
         }
+
         return $strings;
     }
 

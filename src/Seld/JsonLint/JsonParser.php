@@ -114,7 +114,7 @@ class JsonParser
     );
 
     /**
-     * @param string $input JSON string
+     * @param  string                $input JSON string
      * @return null|ParsingException null if no error is found, a ParsingException containing all details otherwise
      */
     public function lint($input)
@@ -127,7 +127,7 @@ class JsonParser
     }
 
     /**
-     * @param string $input JSON string
+     * @param  string           $input JSON string
      * @return mixed
      * @throws ParsingException
      */
@@ -295,9 +295,11 @@ class JsonParser
                     break;
 
                 case 3: // accept
+
                     return true;
             }
         }
+
         return true;
     }
 
@@ -416,6 +418,7 @@ class JsonParser
         if (!is_numeric($token)) {
             $token = isset($this->symbols[$token]) ? $this->symbols[$token] : $token;
         }
+
         return $token;
     }
 }

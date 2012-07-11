@@ -49,6 +49,7 @@ class Lexer
         if (!$r instanceof Undefined) {
             return $r;
         }
+
         return $this->lex();
     }
 
@@ -68,6 +69,7 @@ class Lexer
     {
         $pre = $this->pastInput();
         $c = str_repeat('-', strlen($pre)); // new Array(pre.length + 1).join("-");
+
         return $pre . $this->upcomingInput() . "\n" . $c . "^";
     }
 
@@ -79,6 +81,7 @@ class Lexer
     private function pastInput()
     {
         $past = substr($this->matched, 0, strlen($this->matched) - strlen($this->match));
+
         return (strlen($past) > 20 ? '...' : '') . str_replace("\n", '', substr($past, -20));
     }
 
@@ -88,6 +91,7 @@ class Lexer
         if (strlen($next) < 20) {
             $next .= substr($this->_input, 0, 20 - strlen($next));
         }
+
         return str_replace("\n", '', substr($next, 0, 20) . (strlen($next) > 20 ? '...' : ''));
     }
 
@@ -138,6 +142,7 @@ class Lexer
                 if ($token) {
                     return $token;
                 }
+
                 return new Undefined();
             }
         }
@@ -182,6 +187,7 @@ class Lexer
            break;
         case 2:
             $this->yytext = substr($this->yytext, 1, $this->yyleng-2);
+
             return 4;
         case 3:
             return 17;
