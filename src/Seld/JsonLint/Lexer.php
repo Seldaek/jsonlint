@@ -44,15 +44,12 @@ class Lexer
     );
 
     private $conditionStack;
+    private $input;
+    private $more;
+    private $done;
+    private $matched;
 
-    public $_input;
-
-    public $_more;
-    public $_less;
-    public $done;
-    public $matched;
     public $match;
-
     public $yylineno;
     public $yyleng;
     public $yytext;
@@ -70,8 +67,9 @@ class Lexer
 
     public function setInput($input)
     {
-        $this->_input = $input;
-        $this->_more = $this->_less = $this->done = false;
+        $this->input = $input;
+        $this->more = false;
+        $this->done = false;
         $this->yylineno = $this->yyleng = 0;
         $this->yytext = $this->matched = $this->match = '';
         $this->conditionStack = array('INITIAL');
@@ -104,7 +102,7 @@ class Lexer
     {
         $next = $this->match;
         if (strlen($next) < 20) {
-            $next .= substr($this->_input, 0, 20 - strlen($next));
+            $next .= substr($this->input, 0, 20 - strlen($next));
         }
 
         return str_replace("\n", '', substr($next, 0, 20) . (strlen($next) > 20 ? '...' : ''));
@@ -115,7 +113,7 @@ class Lexer
         if ($this->done) {
             return $this->EOF;
         }
-        if (!$this->_input) {
+        if (!$this->input) {
             $this->done = true;
         }
 
@@ -124,16 +122,16 @@ class Lexer
         $col = null;
         $lines = null;
 
-        if (!$this->_more) {
+        if (!$this->more) {
             $this->yytext = '';
             $this->match = '';
         }
 
-        $rules = $this->_currentRules();
+        $rules = $this->getCurrentRules();
         $rulesLen = count($rules);
 
         for ($i=0; $i < $rulesLen; $i++) {
-            if (preg_match($this->rules[$rules[$i]], $this->_input, $match)) {
+            if (preg_match($this->rules[$rules[$i]], $this->input, $match)) {
                 preg_match_all('/\n.*/', $match[0], $lines);
                 $lines = $lines[0];
                 if ($lines) {
@@ -150,8 +148,8 @@ class Lexer
                 $this->match .= $match[0];
                 $this->matches = $match;
                 $this->yyleng = strlen($this->yytext);
-                $this->_more = false;
-                $this->_input = substr($this->_input, strlen($match[0]));
+                $this->more = false;
+                $this->input = substr($this->input, strlen($match[0]));
                 $this->matched .= $match[0];
                 $token = $this->performAction($rules[$i], $this->conditionStack[count($this->conditionStack)-1]);
                 if ($token) {
@@ -162,7 +160,7 @@ class Lexer
             }
         }
 
-        if ($this->_input === "") {
+        if ($this->input === "") {
             return $this->EOF;
         }
 
@@ -186,7 +184,7 @@ class Lexer
         return array_pop($this->conditionStack);
     }
 
-    private function _currentRules()
+    private function getCurrentRules()
     {
         return $this->conditions[$this->conditionStack[count($this->conditionStack)-1]]['rules'];
     }
