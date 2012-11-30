@@ -29,8 +29,8 @@ use stdClass;
 class JsonParser
 {
     const DETECT_KEY_CONFLICTS = 1;
-	const ALLOW_DUPLICATE_KEYS = 2;
-		
+    const ALLOW_DUPLICATE_KEYS = 2;
+        
     private $flags;
     private $stack;
     private $vstack; // semantic value stack
@@ -355,21 +355,19 @@ class JsonParser
             break;
         case 17:
             $yyval->token = $tokens[$len-2];
-			$key = $tokens[$len][0];
+            $key = $tokens[$len][0];
             if (($this->flags & self::DETECT_KEY_CONFLICTS) && isset($tokens[$len-2]->{$tokens[$len][0]})) {
                 $errStr = 'Parse error on line ' . ($yylineno+1) . ":\n";
                 $errStr .= $this->lexer->showPosition() . "\n";
                 $errStr .= "Duplicate key: ".$tokens[$len][0];
                 throw new ParsingException($errStr);
             }
-			elseif (($this->flags & self::ALLOW_DUPLICATE_KEYS) && isset($tokens[$len-2]->{$tokens[$len][0]})) {
-				$duplicateCount = 1;	
-				do
-				{
-					$duplicateKey = $key . '.' . $duplicateCount++;
-					
-				} while (isset($tokens[$len-2]->$duplicateKey));
-				$key = $duplicateKey;
+            elseif (($this->flags & self::ALLOW_DUPLICATE_KEYS) && isset($tokens[$len-2]->{$tokens[$len][0]})) {
+                $duplicateCount = 1;    
+                do {
+                    $duplicateKey = $key . '.' . $duplicateCount++;
+                } while (isset($tokens[$len-2]->$duplicateKey));
+                $key = $duplicateKey;
             }
             $tokens[$len-2]->$key = $tokens[$len][1];
             break;

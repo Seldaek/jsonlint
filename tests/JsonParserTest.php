@@ -70,16 +70,16 @@ class JsonParserTest extends PHPUnit_Framework_TestCase
             $this->assertContains('Duplicate key: a', $e->getMessage());
         }
     }
-	public function testDuplicateKeys()
+    public function testDuplicateKeys()
     {
         $parser = new JsonParser();
 
-		$result = $parser->parse('{"a":"b", "a":"c", "a":"d"}', JsonParser::ALLOW_DUPLICATE_KEYS);
-		$this->assertThat($result,
-			$this->logicalAnd(
-				$this->arrayHasKey('a'),
-				$this->arrayHasKey('a.1'),
-				$this->arrayHasKey('a.2')
-			));
+        $result = $parser->parse('{"a":"b", "a":"c", "a":"d"}', JsonParser::ALLOW_DUPLICATE_KEYS);
+        $this->assertThat($result,
+            $this->logicalAnd(
+                $this->arrayHasKey('a'),
+                $this->arrayHasKey('a.1'),
+                $this->arrayHasKey('a.2')
+            ));
     }
 }
