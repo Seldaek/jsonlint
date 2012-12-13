@@ -30,7 +30,7 @@ class JsonParser
 {
     const DETECT_KEY_CONFLICTS = 1;
     const ALLOW_DUPLICATE_KEYS = 2;
-        
+
     private $flags;
     private $stack;
     private $vstack; // semantic value stack
@@ -361,9 +361,8 @@ class JsonParser
                 $errStr .= $this->lexer->showPosition() . "\n";
                 $errStr .= "Duplicate key: ".$tokens[$len][0];
                 throw new ParsingException($errStr);
-            }
-            elseif (($this->flags & self::ALLOW_DUPLICATE_KEYS) && isset($tokens[$len-2]->{$tokens[$len][0]})) {
-                $duplicateCount = 1;    
+            } elseif (($this->flags & self::ALLOW_DUPLICATE_KEYS) && isset($tokens[$len-2]->{$tokens[$len][0]})) {
+                $duplicateCount = 1;
                 do {
                     $duplicateKey = $key . '.' . $duplicateCount++;
                 } while (isset($tokens[$len-2]->$duplicateKey));

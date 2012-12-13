@@ -80,6 +80,7 @@ class JsonParserTest extends PHPUnit_Framework_TestCase
                 $this->arrayHasKey('a'),
                 $this->arrayHasKey('a.1'),
                 $this->arrayHasKey('a.2')
-            ));
+            )
+        );
     }
 }
