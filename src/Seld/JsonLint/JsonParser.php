@@ -192,10 +192,30 @@ class JsonParser
                         }
                     }
 
+                    $message = null;
+                    if (in_array("'STRING'", $expected) && in_array(substr($this->lexer->match, 0, 1), array('"', "'"))) {
+                        $message = "Invalid string";
+                        if ("'" === substr($this->lexer->match, 0, 1)) {
+                            $message .= ", it appears you used single quotes instead of double quotes";
+                        } elseif (preg_match('{".+?(\\\\[^"bfnrt/\\\\u])}', $this->lexer->getUpcomingInput(), $match)) {
+                            $message .= ", it appears you have an unescaped backslash at: ".$match[1];
+                        } elseif (preg_match('{"(?:[^"]+|\\\\")*$}m', $this->lexer->getUpcomingInput())) {
+                            $message .= ", it appears you forgot to terminated the string, or attempted to write a multiline string which is invalid";
+                        }
+                    }
+
                     $errStr = 'Parse error on line ' . ($yylineno+1) . ":\n";
                     $errStr .= $this->lexer->showPosition() . "\n";
-                    $errStr .= (count($expected) > 1) ? "Expected one of: " : "Expected: ";
-                    $errStr .= implode(', ', $expected);
+                    if ($message) {
+                        $errStr .= $message;
+                    } else {
+                        $errStr .= (count($expected) > 1) ? "Expected one of: " : "Expected: ";
+                        $errStr .= implode(', ', $expected);
+                    }
+
+                    if (',' === substr(trim($this->lexer->getPastInput()), -1)) {
+                        $errStr .= " - It appears you have an extra trailing comma";
+                    }
 
                     $this->parseError($errStr, array(
                         'text' => $this->lexer->match,

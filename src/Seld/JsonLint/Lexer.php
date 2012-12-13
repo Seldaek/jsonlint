@@ -80,32 +80,32 @@ class Lexer
 
     public function showPosition()
     {
-        $pre = $this->pastInput();
+        $pre = str_replace("\n", '', $this->getPastInput());
         $c = str_repeat('-', strlen($pre)); // new Array(pre.length + 1).join("-");
 
-        return $pre . $this->upcomingInput() . "\n" . $c . "^";
+        return $pre . str_replace("\n", '', $this->getUpcomingInput()) . "\n" . $c . "^";
     }
 
-    protected function parseError($str, $hash)
-    {
-        throw new \Exception($str);
-    }
-
-    private function pastInput()
+    public function getPastInput()
     {
         $past = substr($this->matched, 0, strlen($this->matched) - strlen($this->match));
 
-        return (strlen($past) > 20 ? '...' : '') . str_replace("\n", '', substr($past, -20));
+        return (strlen($past) > 20 ? '...' : '') . substr($past, -20);
     }
 
-    private function upcomingInput()
+    public function getUpcomingInput()
     {
         $next = $this->match;
         if (strlen($next) < 20) {
             $next .= substr($this->input, 0, 20 - strlen($next));
         }
 
-        return str_replace("\n", '', substr($next, 0, 20) . (strlen($next) > 20 ? '...' : ''));
+        return substr($next, 0, 20) . (strlen($next) > 20 ? '...' : '');
+    }
+
+    protected function parseError($str, $hash)
+    {
+        throw new \Exception($str);
     }
 
     private function next()

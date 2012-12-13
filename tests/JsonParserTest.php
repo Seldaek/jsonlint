@@ -51,6 +51,63 @@ class JsonParserTest extends PHPUnit_Framework_TestCase
         return $strings;
     }
 
+    public function testErrorOnTrailingComma()
+    {
+        $parser = new JsonParser();
+        try {
+            $parser->parse('{
+    "foo":"bar",
+}');
+        } catch (ParsingException $e) {
+            $this->assertContains('It appears you have an extra trailing comma', $e->getMessage());
+        }
+    }
+
+    public function testErrorOnInvalidQuotes()
+    {
+        $parser = new JsonParser();
+        try {
+            $parser->parse('{
+    "foo": \'bar\',
+}');
+        } catch (ParsingException $e) {
+            $this->assertContains('Invalid string, it appears you used single quotes instead of double quotes', $e->getMessage());
+        }
+    }
+
+    public function testErrorOnUnescapedBackslash()
+    {
+        $parser = new JsonParser();
+        try {
+            $parser->parse('{
+    "foo": "bar\z",
+}');
+        } catch (ParsingException $e) {
+            $this->assertContains('Invalid string, it appears you have an unescaped backslash at: \z', $e->getMessage());
+        }
+    }
+
+    public function testErrorOnUnterminatedString()
+    {
+        $parser = new JsonParser();
+        try {
+            $parser->parse('{"bar": "foo}');
+        } catch (ParsingException $e) {
+            $this->assertContains('Invalid string, it appears you forgot to terminated the string, or attempted to write a multiline string which is invalid', $e->getMessage());
+        }
+    }
+
+    public function testErrorOnMultilineString()
+    {
+        $parser = new JsonParser();
+        try {
+            $parser->parse('{"bar": "foo
+bar"}');
+        } catch (ParsingException $e) {
+            $this->assertContains('Invalid string, it appears you forgot to terminated the string, or attempted to write a multiline string which is invalid', $e->getMessage());
+        }
+    }
+
     public function testParsesMultiInARow()
     {
         $parser = new JsonParser();
