@@ -6,17 +6,28 @@ JSON Lint
 Usage
 -----
 
-    use Seld\JsonLint\JsonParser;
+```php
+use Seld\JsonLint\JsonParser;
 
-    $parser = new JsonParser();
+$parser = new JsonParser();
     
-    // returns null if it's valid json, or a ParsingException object. Call
-    // ->getDetails() on the exception to get more info.
-    $parser->lint($json);
+// returns null if it's valid json, or a ParsingException object.
+$parser->lint($json);
 
-    // returns parsed json, like json_decode() does, but slower, throws
-    // exceptions on failure.
-    $parser->parse($json);
+// Call getMessage() on the exception object to get
+// a well formatted error message error like this
+
+// Parse error on line 2:
+// ... "key": "value"    "numbers": [1, 2, 3]
+// ----------------------^
+// Expected one of: 'EOF', '}', ':', ',', ']'
+
+// Call getDetails() on the exception to get more info.
+
+// returns parsed json, like json_decode() does, but slower, throws
+// exceptions on failure.
+$parser->parse($json);
+```
 
 Installation
 ------------
