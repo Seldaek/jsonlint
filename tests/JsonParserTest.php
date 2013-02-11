@@ -19,7 +19,7 @@ class JsonParserTest extends PHPUnit_Framework_TestCase
         '2e1', '2E1', '-2e1', '-2E1', '2E+2', '2E-2', '-2E+2', '-2E-2',
         'true', 'false', 'null', '""', '[]', '{}', '"string"',
         '["a", "sdfsd"]',
-        '{"foo":"bar", "bar":"baz"}',
+        '{"foo":"bar", "bar":"baz", "":"buz"}',
         '"\u00c9v\u00e9nement"',
         '"http:\/\/foo.com"',
         '"zo\\\\mg"',
@@ -139,5 +139,14 @@ bar"}');
                 $this->arrayHasKey('a.2')
             )
         );
+    }
+
+    public function testMultipleObjectKeys()
+    {
+        $parser = new JsonParser();
+        $result = $parser->parse('{"":"0", "_empty_":"1", "_empty_.1":"2", "_empty_.2":"3"}');
+        $expectedResult = '{"_empty_":"0","_empty_.1":"1","_empty_.1.1":"2","_empty_.2":"3"}';
+
+        $this->assertEquals(json_decode($expectedResult), $result);
     }
 }
