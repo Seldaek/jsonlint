@@ -19,7 +19,8 @@ class JsonParserTest extends PHPUnit_Framework_TestCase
         '2e1', '2E1', '-2e1', '-2E1', '2E+2', '2E-2', '-2E+2', '-2E-2',
         'true', 'false', 'null', '""', '[]', '{}', '"string"',
         '["a", "sdfsd"]',
-        '{"foo":"bar", "bar":"baz"}',
+        '{"foo":"bar", "bar":"baz", "":"buz"}',
+        '{"":"foo", "_empty_":"bar"}',
         '"\u00c9v\u00e9nement"',
         '"http:\/\/foo.com"',
         '"zo\\\\mg"',
@@ -127,6 +128,19 @@ bar"}');
             $this->assertContains('Duplicate key: a', $e->getMessage());
         }
     }
+
+    public function testDetectsKeyOverridesWithEmpty()
+    {
+        $parser = new JsonParser();
+
+        try {
+            $parser->parse('{"":"b", "_empty_":"a"}', JsonParser::DETECT_KEY_CONFLICTS);
+            $this->fail('Duplicate keys should not be allowed');
+        } catch (ParsingException $e) {
+            $this->assertContains('Duplicate key: _empty_', $e->getMessage());
+        }
+    }
+
     public function testDuplicateKeys()
     {
         $parser = new JsonParser();
@@ -137,6 +151,19 @@ bar"}');
                 $this->arrayHasKey('a'),
                 $this->arrayHasKey('a.1'),
                 $this->arrayHasKey('a.2')
+            )
+        );
+    }
+
+    public function testDuplicateKeysWithEmpty()
+    {
+        $parser = new JsonParser();
+
+        $result = $parser->parse('{"":"a", "_empty_":"b"}', JsonParser::ALLOW_DUPLICATE_KEYS);
+        $this->assertThat($result,
+            $this->logicalAnd(
+                $this->arrayHasKey('_empty_'),
+                $this->arrayHasKey('_empty_.1')
             )
         );
     }

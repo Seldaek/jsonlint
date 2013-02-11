@@ -375,13 +375,13 @@ class JsonParser
             break;
         case 17:
             $yyval->token = $tokens[$len-2];
-            $key = $tokens[$len][0];
-            if (($this->flags & self::DETECT_KEY_CONFLICTS) && isset($tokens[$len-2]->{$tokens[$len][0]})) {
+            $key = $tokens[$len][0] === '' ? '_empty_' : $tokens[$len][0];
+            if (($this->flags & self::DETECT_KEY_CONFLICTS) && isset($tokens[$len-2]->{$key})) {
                 $errStr = 'Parse error on line ' . ($yylineno+1) . ":\n";
                 $errStr .= $this->lexer->showPosition() . "\n";
                 $errStr .= "Duplicate key: ".$tokens[$len][0];
                 throw new ParsingException($errStr);
-            } elseif (($this->flags & self::ALLOW_DUPLICATE_KEYS) && isset($tokens[$len-2]->{$tokens[$len][0]})) {
+            } elseif (($this->flags & self::ALLOW_DUPLICATE_KEYS) && isset($tokens[$len-2]->{$key})) {
                 $duplicateCount = 1;
                 do {
                     $duplicateKey = $key . '.' . $duplicateCount++;
