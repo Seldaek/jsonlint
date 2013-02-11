@@ -19,7 +19,7 @@ class JsonParserTest extends PHPUnit_Framework_TestCase
         '2e1', '2E1', '-2e1', '-2E1', '2E+2', '2E-2', '-2E+2', '-2E-2',
         'true', 'false', 'null', '""', '[]', '{}', '"string"',
         '["a", "sdfsd"]',
-        '{"foo":"bar", "bar":"baz"}',
+        '{"foo":"bar", "bar":"baz", "":"buz"}',
         '"\u00c9v\u00e9nement"',
         '"http:\/\/foo.com"',
         '"zo\\\\mg"',

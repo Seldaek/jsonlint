@@ -388,6 +388,7 @@ class JsonParser
                 } while (isset($tokens[$len-2]->$duplicateKey));
                 $key = $duplicateKey;
             }
+            $key = $key !== '' ? $key : '_empty_';
             $tokens[$len-2]->$key = $tokens[$len][1];
             break;
         case 18:
