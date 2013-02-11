@@ -140,4 +140,13 @@ bar"}');
             )
         );
     }
+
+    public function testMultipleObjectKeys()
+    {
+        $parser = new JsonParser();
+        $result = $parser->parse('{"":"0", "_empty_":"1", "_empty_.1":"2", "_empty_.2":"3"}');
+        $expectedResult = '{"_empty_":"0","_empty_.1":"1","_empty_.1.1":"2","_empty_.2":"3"}';
+
+        $this->assertEquals(json_decode($expectedResult), $result);
+    }
 }

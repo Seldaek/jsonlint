@@ -389,6 +389,17 @@ class JsonParser
                 $key = $duplicateKey;
             }
             $key = $key !== '' ? $key : '_empty_';
+
+            $currentKeys = array_flip(array_keys(get_object_vars($tokens[$len-2])));
+
+            if (isset($currentKeys[$key])) {
+                $duplicateCount = 1;
+                do {
+                    $duplicateKey = $key . '.' . $duplicateCount++;
+                } while (isset($tokens[$len-2]->$duplicateKey));
+                $key = $duplicateKey;
+            }
+
             $tokens[$len-2]->$key = $tokens[$len][1];
             break;
         case 18:
