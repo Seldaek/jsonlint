@@ -172,11 +172,12 @@ bar"}');
             )
         );
     }
-    
-    public function testFileWithBOM() {
+
+    public function testFileWithBOM()
+    {
         try {
             $parser = new JsonParser();
-            $parser->lint(file_get_contents(dirname(__FILE__) .'/bom.json'));
+            $parser->parse(file_get_contents(dirname(__FILE__) .'/bom.json'));
             $this->fail('BOM should be detected');
         } catch (ParsingException $e) {
             $this->assertContains('BOM detected', $e->getMessage());

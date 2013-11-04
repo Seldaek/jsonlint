@@ -135,7 +135,7 @@ class JsonParser
     public function parse($input, $flags = 0)
     {
         $this->failOnBOM($input);
-        
+
         $this->flags = $flags;
 
         $this->stack = array(0);
@@ -451,13 +451,14 @@ class JsonParser
 
         return $token;
     }
-    
+
     private function failOnBOM($input)
     {
         // UTF-8 ByteOrderMark sequence
-        $bom = pack("CCC", 0xef, 0xbb, 0xbf);
-        if (substr($input, 0, 3) == $bom) {
-            $this->parseError("BOM detected. Make sure your input doesn't include a Byte-Order-Mark!");
+        $bom = "\xEF\xBB\xBF";
+
+        if (substr($input, 0, 3) === $bom) {
+            $this->parseError("BOM detected, make sure your input does not include a Unicode Byte-Order-Mark", array());
         }
     }
 }
