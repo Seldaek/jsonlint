@@ -153,9 +153,9 @@ bar"}');
         $result = $parser->parse('{"a":"b", "a":"c", "a":"d"}', JsonParser::ALLOW_DUPLICATE_KEYS);
         $this->assertThat($result,
             $this->logicalAnd(
-                $this->arrayHasKey('a'),
-                $this->arrayHasKey('a.1'),
-                $this->arrayHasKey('a.2')
+                $this->objectHasAttribute('a'),
+                $this->objectHasAttribute('a.1'),
+                $this->objectHasAttribute('a.2')
             )
         );
     }
@@ -167,8 +167,8 @@ bar"}');
         $result = $parser->parse('{"":"a", "_empty_":"b"}', JsonParser::ALLOW_DUPLICATE_KEYS);
         $this->assertThat($result,
             $this->logicalAnd(
-                $this->arrayHasKey('_empty_'),
-                $this->arrayHasKey('_empty_.1')
+                $this->objectHasAttribute('_empty_'),
+                $this->objectHasAttribute('_empty_.1')
             )
         );
     }
