@@ -61,13 +61,27 @@ if (!preg_match('{^https?://}i', $file)) {
     }
 }
 
-lint(file_get_contents($file), $quiet);
+lintFile($file, $quiet);
 
 function lint($content, $quiet = false)
 {
     $parser = new JsonParser();
     if ($err = $parser->lint($content)) {
         fwrite(STDERR, $err->getMessage().PHP_EOL);
+        exit(1);
+    }
+    if (!$quiet) {
+        echo 'Valid JSON'.PHP_EOL;
+    }
+    exit(0);
+}
+
+function lintFile($file, $quiet = false)
+{
+    $content = file_get_contents($file);
+    $parser = new JsonParser();
+    if ($err = $parser->lint($content)) {
+        fwrite(STDERR, $file.': '.$err->getMessage().PHP_EOL);
         exit(1);
     }
     if (!$quiet) {
