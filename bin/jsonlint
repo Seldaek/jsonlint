@@ -27,7 +27,21 @@ if ((!$loader = includeIfExists(__DIR__.'/../vendor/autoload.php')) && (!$loader
 
 use Seld\JsonLint\JsonParser;
 
-if (!isset($_SERVER['argv'][1])) {
+$file = null;
+$quiet = false;
+
+if (isset($_SERVER['argc']) && $_SERVER['argc'] > 1) {
+    for ($i = 1; $i < $_SERVER['argc']; $i++) {
+        $arg = $_SERVER['argv'][$i];
+        if ($arg == '-q' || $arg == '--quiet') {
+            $quiet = true;
+        } else {
+            $file = $arg;
+        }
+    }
+}
+
+if (!$file) {
     if ($contents = file_get_contents('php://stdin')) {
         lint($contents);
     }
@@ -36,7 +50,6 @@ if (!isset($_SERVER['argv'][1])) {
     exit;
 }
 
-$file = $_SERVER['argv'][1];
 if (!preg_match('{^https?://}i', $file)) {
     if (!file_exists($file)) {
         echo 'File not found: '.$file.PHP_EOL;
@@ -48,14 +61,9 @@ if (!preg_match('{^https?://}i', $file)) {
     }
 }
 
-$quiet = false;
-if (isset($_SERVER['argv'][2]) && $_SERVER['argv'][2] == '-q') {
-    $quiet = true;
-}
-
 lint(file_get_contents($file), $quiet);
 
-function lint($content, $quiet)
+function lint($content, $quiet = false)
 {
     $parser = new JsonParser();
     if ($err = $parser->lint($content)) {
