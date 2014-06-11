@@ -32,7 +32,7 @@ if (!isset($_SERVER['argv'][1])) {
         lint($contents);
     }
 
-    echo 'Usage: jsonlint file'.PHP_EOL;
+    echo 'Usage: jsonlint file [options]'.PHP_EOL;
     exit;
 }
 
@@ -48,15 +48,22 @@ if (!preg_match('{^https?://}i', $file)) {
     }
 }
 
-lint(file_get_contents($file));
+$quiet = false;
+if (isset($_SERVER['argv'][2]) && $_SERVER['argv'][2] == '-q') {
+    $quiet = true;
+}
 
-function lint($content)
+lint(file_get_contents($file), $quiet);
+
+function lint($content, $quiet)
 {
     $parser = new JsonParser();
     if ($err = $parser->lint($content)) {
         fwrite(STDERR, $err->getMessage().PHP_EOL);
         exit(1);
     }
-    echo 'Valid JSON'.PHP_EOL;
+    if (!$quiet) {
+        echo 'Valid JSON'.PHP_EOL;
+    }
     exit(0);
 }
