@@ -27,36 +27,74 @@ if ((!$loader = includeIfExists(__DIR__.'/../vendor/autoload.php')) && (!$loader
 
 use Seld\JsonLint\JsonParser;
 
-if (!isset($_SERVER['argv'][1])) {
+$file = null;
+$quiet = false;
+
+if (isset($_SERVER['argc']) && $_SERVER['argc'] > 1) {
+    for ($i = 1; $i < $_SERVER['argc']; $i++) {
+        $arg = $_SERVER['argv'][$i];
+        if ($arg == '-q' || $arg == '--quiet') {
+            $quiet = true;
+        } else if ($arg == '-h' || $arg == '--help') {
+            showUsage();
+        } else {
+            $file = $arg;
+        }
+    }
+}
+
+if (!$file) {
     if ($contents = file_get_contents('php://stdin')) {
         lint($contents);
     }
-
-    echo 'Usage: jsonlint file'.PHP_EOL;
-    exit;
-}
-
-$file = $_SERVER['argv'][1];
-if (!preg_match('{^https?://}i', $file)) {
-    if (!file_exists($file)) {
-        echo 'File not found: '.$file.PHP_EOL;
-        exit(1);
-    }
-    if (!is_readable($file)) {
-        echo 'File not readable: '.$file.PHP_EOL;
-        exit(1);
+} else {
+    if (!preg_match('{^https?://}i', $file)) {
+        if (!file_exists($file)) {
+            echo 'File not found: '.$file.PHP_EOL;
+            exit(1);
+        }
+        if (!is_readable($file)) {
+            echo 'File not readable: '.$file.PHP_EOL;
+            exit(1);
+        }
     }
 }
 
-lint(file_get_contents($file));
+lintFile($file, $quiet);
 
-function lint($content)
+function lint($content, $quiet = false)
 {
     $parser = new JsonParser();
     if ($err = $parser->lint($content)) {
         fwrite(STDERR, $err->getMessage().PHP_EOL);
         exit(1);
     }
-    echo 'Valid JSON'.PHP_EOL;
+    if (!$quiet) {
+        echo 'Valid JSON'.PHP_EOL;
+    }
+    exit(0);
+}
+
+function lintFile($file, $quiet = false)
+{
+    $content = file_get_contents($file);
+    $parser = new JsonParser();
+    if ($err = $parser->lint($content)) {
+        fwrite(STDERR, $file.': '.$err->getMessage().PHP_EOL);
+        exit(1);
+    }
+    if (!$quiet) {
+        echo 'Valid JSON'.PHP_EOL;
+    }
+    exit(0);
+}
+
+function showUsage()
+{
+    echo 'Usage: jsonlint file [options]'.PHP_EOL;
+    echo PHP_EOL;
+    echo 'Options:'.PHP_EOL;
+    echo '-q, --quiet     Cause jsonlint to be quiet when no errors is found'.PHP_EOL;
+    echo '-h, --help      Show this message'.PHP_EOL;
     exit(0);
 }
