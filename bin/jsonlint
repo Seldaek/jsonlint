@@ -50,11 +50,11 @@ if (!$file) {
 } else {
     if (!preg_match('{^https?://}i', $file)) {
         if (!file_exists($file)) {
-            echo 'File not found: '.$file.PHP_EOL;
+            fwrite(STDERR, 'File not found: '.$file.PHP_EOL);
             exit(1);
         }
         if (!is_readable($file)) {
-            echo 'File not readable: '.$file.PHP_EOL;
+            fwrite(STDERR, 'File not readable: '.$file.PHP_EOL);
             exit(1);
         }
     }
