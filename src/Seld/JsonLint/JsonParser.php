@@ -337,11 +337,15 @@ class JsonParser
 	/**
 	 * Convert object to array, deep inspection
 	 *
-	 * @param stdClass $object
+	 * @param mixed $object
 	 * @return array
 	 */
-	private function toArray(stdClass $object)
+	private function toArray($object)
 	{
+		if (!is_array($object) && !is_object($object)) {
+			return $object;
+		}
+
 		$array = array();
 		foreach ($object as $key => $value) {
 			if ($value instanceof stdClass) {
