@@ -146,7 +146,6 @@ class Lexer
                 );
                 $this->yytext .= $match[0];
                 $this->match .= $match[0];
-                $this->matches = $match;
                 $this->yyleng = strlen($this->yytext);
                 $this->more = false;
                 $this->input = substr($this->input, strlen($match[0]));

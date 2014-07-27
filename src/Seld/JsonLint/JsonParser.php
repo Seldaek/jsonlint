@@ -31,6 +31,8 @@ class JsonParser
     const DETECT_KEY_CONFLICTS = 1;
     const ALLOW_DUPLICATE_KEYS = 2;
 
+    private $lexer;
+
     private $flags;
     private $stack;
     private $vstack; // semantic value stack
