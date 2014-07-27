@@ -36,7 +36,6 @@ class JsonParser
     private $vstack; // semantic value stack
     private $lstack; // location stack
 
-    private $yy;
     private $symbols = array(
         'error'                 => 2,
         'JSONString'            => 3,

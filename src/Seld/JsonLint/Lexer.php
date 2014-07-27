@@ -174,16 +174,6 @@ class Lexer
         );
     }
 
-    private function begin($condition)
-    {
-        $this->conditionStack[] = $condition;
-    }
-
-    private function popState()
-    {
-        return array_pop($this->conditionStack);
-    }
-
     private function getCurrentRules()
     {
         return $this->conditions[$this->conditionStack[count($this->conditionStack)-1]]['rules'];
@@ -191,7 +181,6 @@ class Lexer
 
     private function performAction($avoiding_name_collisions, $YY_START)
     {
-        $YYSTATE = $YY_START;
         switch ($avoiding_name_collisions) {
         case 0:/* skip whitespace */
             break;
