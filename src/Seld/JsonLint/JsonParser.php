@@ -29,7 +29,7 @@ class JsonParser
 {
     const DETECT_KEY_CONFLICTS = 1;
     const ALLOW_DUPLICATE_KEYS = 2;
-	const ASSOC_INSTEADOF_OBJECT = 4;
+    const ASSOC_INSTEADOF_OBJECT = 4;
 
     private $lexer;
 
@@ -304,9 +304,10 @@ class JsonParser
                     $r = $this->performAction($yyval, $yytext, $yyleng, $yylineno, $action[1], $this->vstack, $this->lstack);
 
                     if (!$r instanceof Undefined) {
-	                    if ($this->isAssocInsteadOfObject()) {
-		                    $r = $this->toArray($r);
-	                    }
+                        if ($this->isAssocInsteadOfObject()) {
+                            $r = $this->toArray($r);
+                        }
+
                         return $r;
                     }
 
@@ -335,29 +336,29 @@ class JsonParser
         throw new ParsingException($str, $hash);
     }
 
-	/**
-	 * Convert object to array, deep inspection
-	 *
-	 * @param mixed $object
-	 * @return array
-	 */
-	private function toArray($object)
-	{
-		if (!is_array($object) && !is_object($object)) {
-			return $object;
-		}
+    /**
+     * Convert object to array, deep inspection
+     *
+     * @param  mixed $object
+     * @return array
+     */
+    private function toArray($object)
+    {
+        if (!is_array($object) && !is_object($object)) {
+            return $object;
+        }
 
-		$array = array();
-		foreach ($object as $key => $value) {
-			if ($value instanceof stdClass) {
-				$array[$key] = $this->toArray($value);
-			} else {
-				$array[$key] = $value;
-			}
-		}
+        $array = array();
+        foreach ($object as $key => $value) {
+            if ($value instanceof stdClass) {
+                $array[$key] = $this->toArray($value);
+            } else {
+                $array[$key] = $value;
+            }
+        }
 
-		return $array;
-	}
+        return $array;
+    }
 
     // $$ = $tokens // needs to be passed by ref?
     // $ = $token
@@ -438,17 +439,20 @@ class JsonParser
         return new Undefined();
     }
 
-	private function isAllowDuplicateKeys() {
-		return $this->flags & self::ALLOW_DUPLICATE_KEYS;
-	}
+    private function isAllowDuplicateKeys()
+    {
+        return $this->flags & self::ALLOW_DUPLICATE_KEYS;
+    }
 
-	private function isDetectKeyConflicts() {
-		return $this->flags & self::DETECT_KEY_CONFLICTS;
-	}
+    private function isDetectKeyConflicts()
+    {
+        return $this->flags & self::DETECT_KEY_CONFLICTS;
+    }
 
-	private function isAssocInsteadOfObject() {
-		return $this->flags & self::ASSOC_INSTEADOF_OBJECT;
-	}
+    private function isAssocInsteadOfObject()
+    {
+        return $this->flags & self::ASSOC_INSTEADOF_OBJECT;
+    }
 
     private function stringInterpolation($match)
     {
