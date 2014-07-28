@@ -173,6 +173,15 @@ bar"}');
         );
     }
 
+    public function testParseToArray()
+    {
+        $parser = new JsonParser();
+
+        $json = '{"one":"a", "two":{"three": "four"}, "": "empty"}';
+        $result = $parser->parse($json, JsonParser::PARSE_TO_ASSOC);
+        $this->assertSame(json_decode($json, true), $result);
+    }
+
     public function testFileWithBOM()
     {
         try {
