@@ -114,6 +114,19 @@ bar"}');
         }
     }
 
+    public function testErrorAtBeginning()
+    {
+        $parser = new JsonParser();
+        try {
+            $parser->parse('
+
+');
+            $this->fail('Empty string should be invalid');
+        } catch (ParsingException $e) {
+            $this->assertContains("Parse error on line 1:\n\n^", $e->getMessage());
+        }
+    }
+
     public function testParsesMultiInARow()
     {
         $parser = new JsonParser();

@@ -81,7 +81,7 @@ class Lexer
     public function showPosition()
     {
         $pre = str_replace("\n", '', $this->getPastInput());
-        $c = str_repeat('-', strlen($pre) - 1); // new Array(pre.length + 1).join("-");
+        $c = str_repeat('-', max(0, strlen($pre) - 1)); // new Array(pre.length + 1).join("-");
 
         return $pre . str_replace("\n", '', $this->getUpcomingInput()) . "\n" . $c . "^";
     }
