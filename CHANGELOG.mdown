@@ -1,3 +1,7 @@
+### 1.3.1 (2015-01-04)
+
+  * Fixed segfault when parsing large JSON strings
+
 ### 1.3.0 (2014-09-05)
 
   * Added parsing to an associative array via JsonParser::PARSE_TO_ASSOC
