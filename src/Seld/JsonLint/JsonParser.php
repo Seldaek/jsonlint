@@ -464,9 +464,9 @@ class JsonParser
 
     private function popStack($n)
     {
-        $this->stack = array_slice($this->stack, 0, - (2 * $n));
-        $this->vstack = array_slice($this->vstack, 0, - $n);
-        $this->lstack = array_slice($this->lstack, 0, - $n);
+        $this->stack = array_slice($this->stack, 0, - (2 * $n), true);
+        $this->vstack = array_slice($this->vstack, 0, - $n, true);
+        $this->lstack = array_slice($this->lstack, 0, - $n, true);
     }
 
     private function lex()
