@@ -376,7 +376,11 @@ class JsonParser
             $yyval->token = array($tokens[$len-2], $tokens[$len]);
             break;
         case 16:
-            $property = $tokens[$len][0] === '' ? '_empty_' : $tokens[$len][0];
+            if (PHP_VERSION_ID < 70100) {
+                $property = $tokens[$len][0] === '' ? '_empty_' : $tokens[$len][0];
+            } else {
+                $property = $tokens[$len][0];
+            }
             if ($this->flags & self::PARSE_TO_ASSOC) {
                 $yyval->token = array();
                 $yyval->token[$property] = $tokens[$len][1];
@@ -404,7 +408,11 @@ class JsonParser
                 $tokens[$len-2][$key] = $tokens[$len][1];
             } else {
                 $yyval->token = $tokens[$len-2];
-                $key = $tokens[$len][0] === '' ? '_empty_' : $tokens[$len][0];
+                if (PHP_VERSION_ID < 70100) {
+                    $key = $tokens[$len][0] === '' ? '_empty_' : $tokens[$len][0];
+                } else {
+                    $key = $tokens[$len][0];
+                }
                 if (($this->flags & self::DETECT_KEY_CONFLICTS) && isset($tokens[$len-2]->{$key})) {
                     $errStr = 'Parse error on line ' . ($yylineno+1) . ":\n";
                     $errStr .= $this->lexer->showPosition() . "\n";
