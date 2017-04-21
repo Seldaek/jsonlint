@@ -43,14 +43,7 @@ if (isset($_SERVER['argc']) && $_SERVER['argc'] > 1) {
     }
 }
 
-if (!$file) {
-    if ($contents = file_get_contents('php://stdin')) {
-        lint($contents);
-    } else {
-        fwrite(STDERR, 'No file name or json input given'.PHP_EOL);
-        exit(1);
-    }
-} else {
+if ($file) {
     if (!preg_match('{^https?://}i', $file)) {
         if (!file_exists($file)) {
             fwrite(STDERR, 'File not found: '.$file.PHP_EOL);
@@ -60,6 +53,13 @@ if (!$file) {
             fwrite(STDERR, 'File not readable: '.$file.PHP_EOL);
             exit(1);
         }
+    }
+} else {
+    if ($contents = file_get_contents('php://stdin')) {
+        lint($contents);
+    } else {
+        fwrite(STDERR, 'No file name or json input given'.PHP_EOL);
+        exit(1);
     }
 }
 
