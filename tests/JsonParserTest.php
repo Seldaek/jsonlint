@@ -32,6 +32,8 @@ class JsonParserTest extends PHPUnit_Framework_TestCase
         '["http:\/\/foo\\\\zomg"]',
         '{"":"foo"}',
         '{"a":"b", "b":"c"}',
+        '0',
+        '""',
     );
 
     /**

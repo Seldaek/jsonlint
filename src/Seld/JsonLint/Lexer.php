@@ -113,7 +113,7 @@ class Lexer
         if ($this->done) {
             return $this->EOF;
         }
-        if (!$this->input) {
+        if ($this->input === '') {
             $this->done = true;
         }
 
