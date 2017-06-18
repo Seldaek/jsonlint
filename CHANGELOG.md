@@ -1,3 +1,7 @@
+### 1.6.1 (2017-06-18)
+
+  * Fixed parsing of `0` as invalid
+
 ### 1.6.0 (2017-03-06)
 
   * Added $flags arg to JsonParser::lint() to take the same flag as parse() did
