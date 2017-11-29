@@ -29,6 +29,24 @@ $parser->lint($json);
 $parser->parse($json);
 ```
 
+You can also pass additional flags to `JsonParser::lint/parse` that tweak the functionality:
+
+- `JsonParser::DETECT_KEY_CONFLICTS` throws an exception on duplicate keys.
+- `JsonParser::ALLOW_DUPLICATE_KEYS` collects duplicate keys. e.g. if you have two `foo` keys they will end up as `foo` and `foo.2`.
+- `JsonParser::PARSE_TO_ASSOC` parses to associative arrays instead of stdClass objects.
+
+Example:
+
+```
+$parser = new JsonParser;
+try {
+    $jsonParser->parse(file_get_contents($jsonFile), JsonParser::DETECT_KEY_CONFLICTS);
+} catch (DuplicateKeyException $e) {
+    $details = $e->getDetails();
+    echo 'Key '.$details['key'].' is a duplicate in '.$jsonFile.' at line '.$details['line'];
+}
+```
+
 Installation
 ------------
 
