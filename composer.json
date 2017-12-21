@@ -1,5 +1,5 @@
 {
-    "name": "seld/jsonlint",
+    "name": "jackgleeson/jsonlint",
     "description": "JSON Linter",
     "keywords": ["json", "parser", "linter", "validator"],
     "type": "library",
