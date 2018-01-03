@@ -1,3 +1,11 @@
+### 1.7.0 (2018-01-03)
+
+  * Added ability to lint multiple files at once using the jsonlint binary
+
+### 1.6.2 (2017-11-30)
+
+  * No meaningful public changes
+
 ### 1.6.1 (2017-06-18)
 
   * Fixed parsing of `0` as invalid
