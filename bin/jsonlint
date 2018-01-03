@@ -48,16 +48,13 @@ if (isset($_SERVER['argc']) && $_SERVER['argc'] > 1) {
 if (!empty($files)) {
     // file linting
     $exitCode = 0;
-    echo 'Checking ' . count($files) . " file" . (count($files) > 1 ? 's' : '') . PHP_EOL;
     foreach ($files as $file) {
-
         $result = lintFile($file, $quiet);
         if ($result === false) {
             $exitCode = 1;
         }
     }
     exit($exitCode);
-
 } else {
     //stdin linting
     if ($contents = file_get_contents('php://stdin')) {
