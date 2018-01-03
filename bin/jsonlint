@@ -27,7 +27,7 @@ if ((!$loader = includeIfExists(__DIR__.'/../vendor/autoload.php')) && (!$loader
 
 use Seld\JsonLint\JsonParser;
 
-$file = null;
+$files = [];
 $quiet = false;
 
 if (isset($_SERVER['argc']) && $_SERVER['argc'] > 1) {
@@ -35,63 +35,80 @@ if (isset($_SERVER['argc']) && $_SERVER['argc'] > 1) {
         $arg = $_SERVER['argv'][$i];
         if ($arg == '-q' || $arg == '--quiet') {
             $quiet = true;
-        } else if ($arg == '-h' || $arg == '--help') {
-            showUsage();
         } else {
-            $file = $arg;
+            if ($arg == '-h' || $arg == '--help') {
+                showUsage();
+            } else {
+                $files[] = $arg;
+            }
         }
     }
 }
 
-if ($file) {
-    if (!preg_match('{^https?://}i', $file)) {
-        if (!file_exists($file)) {
-            fwrite(STDERR, 'File not found: '.$file.PHP_EOL);
-            exit(1);
-        }
-        if (!is_readable($file)) {
-            fwrite(STDERR, 'File not readable: '.$file.PHP_EOL);
-            exit(1);
+if (!empty($files)) {
+    // file linting
+    $exitCode = 0;
+    echo 'Checking ' . count($files) . " file" . (count($files) > 1 ? 's' : '') . PHP_EOL;
+    foreach ($files as $file) {
+
+        $result = lintFile($file, $quiet);
+        if ($result === false) {
+            $exitCode = 1;
         }
     }
+    exit($exitCode);
+
 } else {
+    //stdin linting
     if ($contents = file_get_contents('php://stdin')) {
         lint($contents);
     } else {
-        fwrite(STDERR, 'No file name or json input given'.PHP_EOL);
+        fwrite(STDERR, 'No file name or json input given' . PHP_EOL);
         exit(1);
     }
 }
 
-lintFile($file, $quiet);
-
+// stdin lint function
 function lint($content, $quiet = false)
 {
     $parser = new JsonParser();
     if ($err = $parser->lint($content)) {
-        fwrite(STDERR, $err->getMessage().PHP_EOL);
+        fwrite(STDERR, $err->getMessage() . ' (stdin)' . PHP_EOL);
         exit(1);
     }
     if (!$quiet) {
-        echo 'Valid JSON'.PHP_EOL;
+        echo 'Valid JSON (stdin)' . PHP_EOL;
+        exit(0);
     }
-    exit(0);
 }
 
+// file lint function
 function lintFile($file, $quiet = false)
 {
+    if (!preg_match('{^https?://}i', $file)) {
+        if (!file_exists($file)) {
+            fwrite(STDERR, 'File not found: ' . $file . PHP_EOL);
+            return false;
+        }
+        if (!is_readable($file)) {
+            fwrite(STDERR, 'File not readable: ' . $file . PHP_EOL);
+            return false;
+        }
+    }
+
     $content = file_get_contents($file);
     $parser = new JsonParser();
     if ($err = $parser->lint($content)) {
-        fwrite(STDERR, $file.': '.$err->getMessage().PHP_EOL);
-        exit(1);
+        fwrite(STDERR, $file . ': ' . $err->getMessage() . PHP_EOL);
+        return false;
     }
     if (!$quiet) {
-        echo 'Valid JSON'.PHP_EOL;
+        echo 'Valid JSON (' . $file . ')' . PHP_EOL;
     }
-    exit(0);
+    return true;
 }
 
+// usage text function
 function showUsage()
 {
     echo 'Usage: jsonlint file [options]'.PHP_EOL;
