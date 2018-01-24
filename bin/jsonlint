@@ -27,7 +27,7 @@ if ((!$loader = includeIfExists(__DIR__.'/../vendor/autoload.php')) && (!$loader
 
 use Seld\JsonLint\JsonParser;
 
-$files = [];
+$files = array();
 $quiet = false;
 
 if (isset($_SERVER['argc']) && $_SERVER['argc'] > 1) {
