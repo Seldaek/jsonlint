@@ -1,3 +1,7 @@
+### 1.7.1 (2018-01-24)
+
+  * Fixed PHP 5.3 compatibility in bin/jsonlint
+
 ### 1.7.0 (2018-01-03)
 
   * Added ability to lint multiple files at once using the jsonlint binary
