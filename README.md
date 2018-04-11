@@ -40,7 +40,7 @@ Example:
 ```
 $parser = new JsonParser;
 try {
-    $jsonParser->parse(file_get_contents($jsonFile), JsonParser::DETECT_KEY_CONFLICTS);
+    $parser->parse(file_get_contents($jsonFile), JsonParser::DETECT_KEY_CONFLICTS);
 } catch (DuplicateKeyException $e) {
     $details = $e->getDetails();
     echo 'Key '.$details['key'].' is a duplicate in '.$jsonFile.' at line '.$details['line'];
