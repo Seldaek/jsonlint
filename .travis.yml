@@ -11,6 +11,7 @@ php:
   - 7.1
   - 7.2
   - 7.3
+  - 7.4snapshot
   - nightly
 
 matrix:
@@ -18,6 +19,8 @@ matrix:
     - dist: precise
       php: 5.3
   fast_finish: true
+  allow_failures:
+    - php: nightly
 
 before_script:
   - composer update
