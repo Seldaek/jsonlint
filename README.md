@@ -10,7 +10,7 @@ Usage
 use Seld\JsonLint\JsonParser;
 
 $parser = new JsonParser();
-    
+
 // returns null if it's valid json, or a ParsingException object.
 $parser->lint($json);
 
@@ -37,7 +37,7 @@ You can also pass additional flags to `JsonParser::lint/parse` that tweak the fu
 
 Example:
 
-```
+```php
 $parser = new JsonParser;
 try {
     $parser->parse(file_get_contents($jsonFile), JsonParser::DETECT_KEY_CONFLICTS);
