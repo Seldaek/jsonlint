@@ -450,6 +450,10 @@ class JsonParser
 
     private function stringInterpolation($match)
     {
+        if (strpos($match[0], '\u') === 0) {
+            return json_decode('"'.$match[0].'"');
+        }
+
         switch ($match[0]) {
         case '\\\\':
             return '\\';
