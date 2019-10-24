@@ -468,7 +468,7 @@ class JsonParser
         case '\/':
             return "/";
         default:
-            return html_entity_decode('&#x'.ltrim(substr($match[0], 2), '0').';', 0, 'UTF-8');
+            return html_entity_decode('&#x'.ltrim(substr($match[0], 2), '0').';', ENT_QUOTES, 'UTF-8');
         }
     }
 
