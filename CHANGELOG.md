@@ -1,3 +1,7 @@
+### 1.7.2 (2019-10-24)
+
+  * Fixed issue decoding some unicode escaped characters (for " and ')
+
 ### 1.7.1 (2018-01-24)
 
   * Fixed PHP 5.3 compatibility in bin/jsonlint
