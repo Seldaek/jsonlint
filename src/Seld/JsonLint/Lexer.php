@@ -81,26 +81,26 @@ class Lexer
     public function showPosition()
     {
         $pre = str_replace("\n", '', $this->getPastInput());
-        $c = str_repeat('-', max(0, strlen($pre) - 1)); // new Array(pre.length + 1).join("-");
+        $c = str_repeat('-', max(0, \strlen($pre) - 1)); // new Array(pre.length + 1).join("-");
 
         return $pre . str_replace("\n", '', $this->getUpcomingInput()) . "\n" . $c . "^";
     }
 
     public function getPastInput()
     {
-        $past = substr($this->matched, 0, strlen($this->matched) - strlen($this->match));
+        $past = substr($this->matched, 0, \strlen($this->matched) - \strlen($this->match));
 
-        return (strlen($past) > 20 ? '...' : '') . substr($past, -20);
+        return (\strlen($past) > 20 ? '...' : '') . substr($past, -20);
     }
 
     public function getUpcomingInput()
     {
         $next = $this->match;
-        if (strlen($next) < 20) {
-            $next .= substr($this->input, 0, 20 - strlen($next));
+        if (\strlen($next) < 20) {
+            $next .= substr($this->input, 0, 20 - \strlen($next));
         }
 
-        return substr($next, 0, 20) . (strlen($next) > 20 ? '...' : '');
+        return substr($next, 0, 20) . (\strlen($next) > 20 ? '...' : '');
     }
 
     protected function parseError($str, $hash)
@@ -128,29 +128,29 @@ class Lexer
         }
 
         $rules = $this->getCurrentRules();
-        $rulesLen = count($rules);
+        $rulesLen = \count($rules);
 
         for ($i=0; $i < $rulesLen; $i++) {
             if (preg_match($this->rules[$rules[$i]], $this->input, $match)) {
                 preg_match_all('/\n.*/', $match[0], $lines);
                 $lines = $lines[0];
                 if ($lines) {
-                    $this->yylineno += count($lines);
+                    $this->yylineno += \count($lines);
                 }
 
                 $this->yylloc = array(
                     'first_line' => $this->yylloc['last_line'],
                     'last_line' => $this->yylineno+1,
                     'first_column' => $this->yylloc['last_column'],
-                    'last_column' => $lines ? strlen($lines[count($lines) - 1]) - 1 : $this->yylloc['last_column'] + strlen($match[0]),
+                    'last_column' => $lines ? \strlen($lines[\count($lines) - 1]) - 1 : $this->yylloc['last_column'] + \strlen($match[0]),
                 );
                 $this->yytext .= $match[0];
                 $this->match .= $match[0];
-                $this->yyleng = strlen($this->yytext);
+                $this->yyleng = \strlen($this->yytext);
                 $this->more = false;
-                $this->input = substr($this->input, strlen($match[0]));
+                $this->input = substr($this->input, \strlen($match[0]));
                 $this->matched .= $match[0];
-                $token = $this->performAction($rules[$i], $this->conditionStack[count($this->conditionStack)-1]);
+                $token = $this->performAction($rules[$i], $this->conditionStack[\count($this->conditionStack)-1]);
                 if ($token) {
                     return $token;
                 }
@@ -175,7 +175,7 @@ class Lexer
 
     private function getCurrentRules()
     {
-        return $this->conditions[$this->conditionStack[count($this->conditionStack)-1]]['rules'];
+        return $this->conditions[$this->conditionStack[\count($this->conditionStack)-1]]['rules'];
     }
 
     private function performAction($avoiding_name_collisions, $YY_START)
