@@ -47,10 +47,9 @@ try {
 }
 ```
 
-*Note:*
-This library is meant to parse JSON while providing good error messages on failure. There is no way it can be as fast as php native `json_decode()`.
-
-Its recommended to parse with `json_decode`, and when it fails parse again with jsonlint to get a proper error message out, something [as done in Composer](https://github.com/composer/composer/blob/56edd53046fd697d32b2fd2fbaf45af5d7951671/src/Composer/Json/JsonFile.php#L283-L318):
+> **Note:** This library is meant to parse JSON while providing good error messages on failure. There is no way it can be as fast as php native `json_decode()`.
+>
+> It is recommended to parse with `json_decode`, and when it fails parse again with seld/jsonlint to get a proper error message back to the user. See for example [how Composer uses this library](https://github.com/composer/composer/blob/56edd53046fd697d32b2fd2fbaf45af5d7951671/src/Composer/Json/JsonFile.php#L283-L318):
 
 
 Installation
