@@ -104,6 +104,20 @@ class Lexer
         return substr($next, 0, 20) . (\strlen($next) > 20 ? '...' : '');
     }
 
+    public function getFullUpcomingInput()
+    {
+        $next = $this->match;
+        if (substr($next, 0, 1) === '"' && substr_count($next, '"') === 1) {
+            $len = \strlen($this->input);
+            $strEnd = min(strpos($this->input, '"', $this->offset + 1) ?: $len, strpos($this->input, "\n", $this->offset + 1) ?: $len);
+            $next .= substr($this->input, $this->offset, $strEnd - $this->offset);
+        } elseif (\strlen($next) < 20) {
+            $next .= substr($this->input, $this->offset, 20 - \strlen($next));
+        }
+
+        return $next;
+    }
+
     protected function parseError($str, $hash)
     {
         throw new \Exception($str);

@@ -99,6 +99,44 @@ class JsonParserTest extends TestCase
         }
     }
 
+    public function testErrorOnLongUnescapedBackslash()
+    {
+        $parser = new JsonParser();
+        try {
+            $parser->parse('{
+    "#3026386-26 - Drush fatal error after upgrading to 8.6.6, 8.5.9, or 7.62: PHP Fatal error: Uncaught TYPO3\PharStreamWrapper\Exception": "https://www.drupal.org/files/issues/2019-01-16/d8-3026386-26.patch"
+}');
+            $this->fail('Invalid unescaped string should be detected');
+        } catch (ParsingException $e) {
+            $expected = <<<'EXPECTED'
+Parse error on line 1:
+{    "#3026386-26 - Drush
+----^
+Invalid string, it appears you have an unescaped backslash at: \Phar
+EXPECTED;
+            $this->assertEquals($expected, $e->getMessage());
+        }
+    }
+
+    public function testErrorOnLongUnescapedBackslash2()
+    {
+        $parser = new JsonParser();
+        try {
+            $parser->parse('{
+    "#3026386-26 - Drush fatal error after upgrading to 8.6.6, 8.5.9, or 7.62: PHP Fatal error": "https://www.drupal.org/files/issues/201\9-01-16/d8-3026386-26.patch
+}');
+            $this->fail('Invalid unescaped string should be detected');
+        } catch (ParsingException $e) {
+            $expected = <<<'EXPECTED'
+Parse error on line 2:
+...: PHP Fatal error": "https://www.drupal.
+----------------------^
+Invalid string, it appears you have an unescaped backslash at: \9-01
+EXPECTED;
+            $this->assertEquals($expected, $e->getMessage());
+        }
+    }
+
     public function testErrorOnUnterminatedString()
     {
         $parser = new JsonParser();
