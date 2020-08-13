@@ -332,6 +332,7 @@ class JsonParser
             }
         }
 
+        // @phpstan-ignore-next-line
         return true;
     }
 
