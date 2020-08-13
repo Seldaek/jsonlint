@@ -6,7 +6,6 @@ on:
 
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist"
-  SYMFONY_PHPUNIT_VERSION: ""
 
 jobs:
   tests:
@@ -40,8 +39,8 @@ jobs:
         uses: "actions/cache@v1"
         with:
           path: "${{ steps.determine-composer-cache-directory.outputs.directory }}"
-          key: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}-${{ hashFiles('**/composer.lock') }}"
-          restore-keys: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}"
+          key: "php-${{ matrix.php-version }}-${{ hashFiles('**/composer.json') }}"
+          restore-keys: "php-${{ matrix.php-version }}
 
       - name: "Install highest dependencies from composer.json using composer binary provided by system"
         run: "composer update ${{ env.COMPOSER_FLAGS }}"
