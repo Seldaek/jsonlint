@@ -15,12 +15,19 @@ class ParsingException extends \Exception
 {
     protected $details;
 
+    /**
+     * @param string $message
+     * @psalm-param array{text?: string, token?: string, line?: int, loc?: array, expected?: array} $details
+     */
     public function __construct($message, $details = array())
     {
         $this->details = $details;
         parent::__construct($message);
     }
 
+    /**
+     * @psalm-return array{text?: string, token?: string, line?: int, loc?: array, expected?: array}
+     */
     public function getDetails()
     {
         return $this->details;
