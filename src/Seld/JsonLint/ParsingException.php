@@ -17,7 +17,7 @@ class ParsingException extends \Exception
 
     /**
      * @param string $message
-     * @psalm-param array{text?: string, token?: string, line?: int, loc?: array, expected?: array}
+     * @psalm-param array{text?: string, token?: string, line?: int, loc?: array, expected?: array} $details
      */
     public function __construct($message, $details = array())
     {
