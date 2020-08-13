@@ -39,7 +39,7 @@ jobs:
         with:
           path: "${{ steps.determine-composer-cache-directory.outputs.directory }}"
           key: "php-${{ matrix.php-version }}-${{ hashFiles('**/composer.json') }}"
-          restore-keys: "php-${{ matrix.php-version }}
+          restore-keys: "php-${{ matrix.php-version }}"
 
       - name: "Install highest dependencies from composer.json using composer binary provided by system"
         run: "composer update ${{ env.COMPOSER_FLAGS }}"
