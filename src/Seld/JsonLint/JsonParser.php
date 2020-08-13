@@ -38,6 +38,9 @@ class JsonParser
     private $vstack; // semantic value stack
     private $lstack; // location stack
 
+    /**
+     * @phpstan-var<string, int>
+     */
     private $symbols = array(
         'error'                 => 2,
         'JSONString'            => 3,
@@ -67,6 +70,9 @@ class JsonParser
         '$end'                  => 1,
     );
 
+    /**
+     * @phpstan-var<int, string>
+     */
     private $terminals_ = array(
         2   => "error",
         4   => "STRING",
