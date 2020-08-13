@@ -8,3 +8,4 @@ parameters:
     ignoreErrors:
         -
            message: '#Method Seld\JsonLint\JsonParser::lint\(\) should return Seld\JsonLint\ParsingException|null but return statement is missing.#'
+           path: 'src/Seld/JsonLint/JsonParser.php'
