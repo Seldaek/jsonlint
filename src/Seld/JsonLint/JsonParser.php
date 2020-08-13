@@ -39,7 +39,7 @@ class JsonParser
     private $lstack; // location stack
 
     /**
-     * @phpstan-var<string, int>
+     * @phpstan-var array<string, int>
      */
     private $symbols = array(
         'error'                 => 2,
@@ -71,7 +71,7 @@ class JsonParser
     );
 
     /**
-     * @phpstan-var<int, string>
+     * @phpstan-var array<int, string>
      */
     private $terminals_ = array(
         2   => "error",
