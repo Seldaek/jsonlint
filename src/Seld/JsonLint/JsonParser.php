@@ -303,7 +303,7 @@ class JsonParser
                         'first_column' => $this->lstack[\count($this->lstack) - ($len ?: 1)]['first_column'],
                         'last_column' => $this->lstack[\count($this->lstack) - 1]['last_column'],
                     );
-                    $r = $this->performAction($yyval, $yytext, $yyleng, $yylineno, $action[1], $this->vstack, $this->lstack);
+                    $r = $this->performAction($yyval, $yytext, $yyleng, $yylineno, $action[1], $this->vstack);
 
                     if (!$r instanceof Undefined) {
                         return $r;
