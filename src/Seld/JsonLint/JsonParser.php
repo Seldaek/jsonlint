@@ -11,6 +11,7 @@
 
 namespace Seld\JsonLint;
 use stdClass;
+use LogicException;
 
 /**
  * Parser class
