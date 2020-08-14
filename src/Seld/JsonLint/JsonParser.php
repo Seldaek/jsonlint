@@ -333,8 +333,7 @@ class JsonParser
             }
         }
 
-        // @phpstan-ignore-next-line
-        return true;
+        throw new LogicException('this should never happen');
     }
 
     protected function parseError($str, $hash)
