@@ -11,7 +11,6 @@
 
 namespace Seld\JsonLint;
 use stdClass;
-use LogicException;
 
 /**
  * Parser class
@@ -333,8 +332,6 @@ class JsonParser
                     return true;
             }
         }
-
-        throw new LogicException('this should never happen');
     }
 
     protected function parseError($str, $hash)
