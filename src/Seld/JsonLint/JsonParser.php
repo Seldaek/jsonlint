@@ -133,6 +133,7 @@ class JsonParser
         } catch (ParsingException $e) {
             return $e;
         }
+        return null;
     }
 
     /**
