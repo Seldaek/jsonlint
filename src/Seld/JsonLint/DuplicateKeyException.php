@@ -15,6 +15,7 @@ class DuplicateKeyException extends ParsingException
 {
     /**
      * @param string $message
+     * @param string $key
      * @psalm-param array{text?: string, token?: string, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[]} $details
      */
     public function __construct($message, $key, array $details = array())
