@@ -17,7 +17,7 @@ class ParsingException extends \Exception
 
     /**
      * @param string $message
-     * @psalm-param array{text?: string, token?: string, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[]} $details
+     * @phpstan-param array{text?: string, token?: string, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[]} $details
      */
     public function __construct($message, $details = array())
     {
@@ -26,7 +26,7 @@ class ParsingException extends \Exception
     }
 
     /**
-     * @psalm-return array{text?: string, token?: string, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[]}
+     * @phpstan-return array{text?: string, token?: string, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[]}
      */
     public function getDetails()
     {

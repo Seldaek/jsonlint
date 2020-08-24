@@ -16,7 +16,7 @@ class DuplicateKeyException extends ParsingException
     /**
      * @param string $message
      * @param string $key
-     * @psalm-param array{text?: string, token?: string, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[]} $details
+     * @phpstan-param array{text?: string, token?: string, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[]} $details
      */
     public function __construct($message, $key, array $details = array())
     {
@@ -30,7 +30,7 @@ class DuplicateKeyException extends ParsingException
     }
 
     /**
-     * @psalm-return array{text?: string, token?: string, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[], key: string}
+     * @phpstan-return array{text?: string, token?: string, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[], key: string}
      */
     public function getDetails()
     {
