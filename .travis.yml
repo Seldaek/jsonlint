@@ -22,6 +22,26 @@ matrix:
       dist: bionic
     - php: nightly
       dist: bionic
+    # Adding jobs for ppc64le
+    - php: 5.6
+      arch: ppc64le
+      dist: xenial
+    - php: 7.0
+      arch: ppc64le
+      dist: xenial
+    - php: 7.1
+      arch: ppc64le
+      dist: bionic
+    - php: 7.2
+      arch: ppc64le
+      dist: bionic
+    - php: 7.4
+      arch: ppc64le
+      dist: bionic
+    - php: nightly
+      arch: ppc64le
+      dist: bionic
+
   fast_finish: true
 
 install:
