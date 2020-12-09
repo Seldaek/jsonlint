@@ -15,10 +15,15 @@
         "php": "^5.3 || ^7.0 || ^8.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.0"
+        "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.0 || ^8.5.13",
+        "phpstan/phpstan": "^0.12.59"
     },
     "autoload": {
         "psr-4": { "Seld\\JsonLint\\": "src/Seld/JsonLint/" }
     },
-    "bin": ["bin/jsonlint"]
+    "bin": ["bin/jsonlint"],
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "phpstan": "vendor/bin/phpstan analyse"
+    }
 }
