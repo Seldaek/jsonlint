@@ -15,7 +15,7 @@
         "php": "^5.3 || ^7.0 || ^8.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.0 || ^8.5.13",
+        "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.0 || ^8.5.13 || ^9",
         "phpstan/phpstan": "^0.12.59"
     },
     "autoload": {
