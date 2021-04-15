@@ -1,3 +1,5 @@
+You can find newer changelog entries in [GitHub releases](https://github.com/Seldaek/jsonlint/releases)
+
 ### 1.8.1 (2020-08-13)
 
   * Added type annotations
