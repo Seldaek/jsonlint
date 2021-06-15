@@ -205,9 +205,9 @@ class JsonParser
                     }
 
                     $message = null;
-                    if (\in_array("'STRING'", $expected) && \in_array(substr($this->lexer->match, 0, 1), array('"', "'"))) {
+                    if (\in_array("'STRING'", $expected) && \in_array(mb_substr($this->lexer->match, 0, 1), array('"', "'"))) {
                         $message = "Invalid string";
-                        if ("'" === substr($this->lexer->match, 0, 1)) {
+                        if ("'" === mb_substr($this->lexer->match, 0, 1)) {
                             $message .= ", it appears you used single quotes instead of double quotes";
                         } elseif (preg_match('{".+?(\\\\[^"bfnrt/\\\\u](...)?)}', $this->lexer->getFullUpcomingInput(), $match)) {
                             $message .= ", it appears you have an unescaped backslash at: ".$match[1];
@@ -225,7 +225,7 @@ class JsonParser
                         $errStr .= implode(', ', $expected);
                     }
 
-                    if (',' === substr(trim($this->lexer->getPastInput()), -1)) {
+                    if (',' === mb_substr(trim($this->lexer->getPastInput()), -1)) {
                         $errStr .= " - It appears you have an extra trailing comma";
                     }
 
@@ -352,10 +352,10 @@ class JsonParser
             $yyval->token = $yytext;
             break;
         case 2:
-            if (strpos($yytext, 'e') !== false || strpos($yytext, 'E') !== false) {
+            if (mb_strpos($yytext, 'e') !== false || mb_strpos($yytext, 'E') !== false) {
                 $yyval->token = \floatval($yytext);
             } else {
-                $yyval->token = strpos($yytext, '.') === false ? \intval($yytext) : \floatval($yytext);
+                $yyval->token = mb_strpos($yytext, '.') === false ? \intval($yytext) : \floatval($yytext);
             }
             break;
         case 3:
@@ -473,7 +473,7 @@ class JsonParser
         case '\/':
             return "/";
         default:
-            return html_entity_decode('&#x'.ltrim(substr($match[0], 2), '0').';', ENT_QUOTES, 'UTF-8');
+            return html_entity_decode('&#x'.ltrim(mb_substr($match[0], 2), '0').';', ENT_QUOTES, 'UTF-8');
         }
     }
 
@@ -500,7 +500,7 @@ class JsonParser
         // UTF-8 ByteOrderMark sequence
         $bom = "\xEF\xBB\xBF";
 
-        if (substr($input, 0, 3) === $bom) {
+        if (mb_substr($input, 0, 3) === $bom) {
             $this->parseError("BOM detected, make sure your input does not include a Unicode Byte-Order-Mark", array());
         }
     }

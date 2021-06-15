@@ -23,20 +23,20 @@ class Lexer
      * @phpstan-var array<int, string>
      */
     private $rules = array(
-        0 => '/\G\s+/',
-        1 => '/\G-?([0-9]|[1-9][0-9]+)(\.[0-9]+)?([eE][+-]?[0-9]+)?\b/',
-        2 => '{\G"(?>\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4}|[^\0-\x1f\\\\"]++)*+"}',
-        3 => '/\G\{/',
-        4 => '/\G\}/',
-        5 => '/\G\[/',
-        6 => '/\G\]/',
-        7 => '/\G,/',
-        8 => '/\G:/',
-        9 => '/\Gtrue\b/',
-        10 => '/\Gfalse\b/',
-        11 => '/\Gnull\b/',
-        12 => '/\G$/',
-        13 => '/\G./',
+        0 => '/\G\s+/u',
+        1 => '/\G-?([0-9]|[1-9][0-9]+)(\.[0-9]+)?([eE][+-]?[0-9]+)?\b/u',
+        2 => '{\G"(?>\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4}|[^\0-\x1f\\\\"]++)*+"}u',
+        3 => '/\G\{/u',
+        4 => '/\G\}/u',
+        5 => '/\G\[/u',
+        6 => '/\G\]/u',
+        7 => '/\G,/u',
+        8 => '/\G:/u',
+        9 => '/\Gtrue\b/u',
+        10 => '/\Gfalse\b/u',
+        11 => '/\Gnull\b/u',
+        12 => '/\G$/u',
+        13 => '/\G./u',
     );
 
     private $conditions = array(
@@ -85,37 +85,37 @@ class Lexer
     public function showPosition()
     {
         $pre = str_replace("\n", '', $this->getPastInput());
-        $c = str_repeat('-', max(0, \strlen($pre) - 1)); // new Array(pre.length + 1).join("-");
+        $c = str_repeat('-', max(0, \mb_strlen($pre) - 1)); // new Array(pre.length + 1).join("-");
 
         return $pre . str_replace("\n", '', $this->getUpcomingInput()) . "\n" . $c . "^";
     }
 
     public function getPastInput()
     {
-        $pastLength = $this->offset - \strlen($this->match);
+        $pastLength = $this->offset - \mb_strlen($this->match);
 
-        return ($pastLength > 20 ? '...' : '') . substr($this->input, max(0, $pastLength - 20), min(20, $pastLength));
+        return ($pastLength > 20 ? '...' : '') . mb_substr($this->input, max(0, $pastLength - 20), min(20, $pastLength));
     }
 
     public function getUpcomingInput()
     {
         $next = $this->match;
-        if (\strlen($next) < 20) {
-            $next .= substr($this->input, $this->offset, 20 - \strlen($next));
+        if (\mb_strlen($next) < 20) {
+            $next .= mb_substr($this->input, $this->offset, 20 - \mb_strlen($next));
         }
 
-        return substr($next, 0, 20) . (\strlen($next) > 20 ? '...' : '');
+        return mb_substr($next, 0, 20) . (\mb_strlen($next) > 20 ? '...' : '');
     }
 
     public function getFullUpcomingInput()
     {
         $next = $this->match;
-        if (substr($next, 0, 1) === '"' && substr_count($next, '"') === 1) {
-            $len = \strlen($this->input);
-            $strEnd = min(strpos($this->input, '"', $this->offset + 1) ?: $len, strpos($this->input, "\n", $this->offset + 1) ?: $len);
-            $next .= substr($this->input, $this->offset, $strEnd - $this->offset);
-        } elseif (\strlen($next) < 20) {
-            $next .= substr($this->input, $this->offset, 20 - \strlen($next));
+        if (mb_substr($next, 0, 1) === '"' && mb_substr_count($next, '"') === 1) {
+            $len = \mb_strlen($this->input);
+            $strEnd = min(mb_strpos($this->input, '"', $this->offset + 1) ?: $len, mb_strpos($this->input, "\n", $this->offset + 1) ?: $len);
+            $next .= mb_substr($this->input, $this->offset, $strEnd - $this->offset);
+        } elseif (\mb_strlen($next) < 20) {
+            $next .= mb_substr($this->input, $this->offset, 20 - \mb_strlen($next));
         }
 
         return $next;
@@ -131,7 +131,7 @@ class Lexer
         if ($this->done) {
             return $this->EOF;
         }
-        if ($this->offset === \strlen($this->input)) {
+        if ($this->offset === \mb_strlen($this->input)) {
             $this->done = true;
         }
 
@@ -149,8 +149,8 @@ class Lexer
         $rulesLen = \count($rules);
 
         for ($i=0; $i < $rulesLen; $i++) {
-            if (preg_match($this->rules[$rules[$i]], $this->input, $match, 0, $this->offset)) {
-                preg_match_all('/\n.*/', $match[0], $lines);
+            if (preg_match($this->rules[$rules[$i]], $this->input, $match, 0, strlen(mb_substr($this->input, 0, $this->offset)))) {
+                preg_match_all('/\n.*/u', $match[0], $lines);
                 $lines = $lines[0];
                 if ($lines) {
                     $this->yylineno += \count($lines);
@@ -160,13 +160,13 @@ class Lexer
                     'first_line' => $this->yylloc['last_line'],
                     'last_line' => $this->yylineno+1,
                     'first_column' => $this->yylloc['last_column'],
-                    'last_column' => $lines ? \strlen($lines[\count($lines) - 1]) - 1 : $this->yylloc['last_column'] + \strlen($match[0]),
+                    'last_column' => $lines ? \mb_strlen($lines[\count($lines) - 1]) - 1 : $this->yylloc['last_column'] + \mb_strlen($match[0]),
                 );
                 $this->yytext .= $match[0];
                 $this->match .= $match[0];
-                $this->yyleng = \strlen($this->yytext);
+                $this->yyleng = \mb_strlen($this->yytext);
                 $this->more = false;
-                $this->offset += \strlen($match[0]);
+                $this->offset += \mb_strlen($match[0]);
                 $token = $this->performAction($rules[$i], $this->conditionStack[\count($this->conditionStack)-1]);
                 if ($token) {
                     return $token;
@@ -176,7 +176,7 @@ class Lexer
             }
         }
 
-        if ($this->offset === \strlen($this->input)) {
+        if ($this->offset === \mb_strlen($this->input)) {
             return $this->EOF;
         }
 
@@ -203,7 +203,7 @@ class Lexer
         case 1:
             return 6;
         case 2:
-            $this->yytext = substr($this->yytext, 1, $this->yyleng-2);
+            $this->yytext = mb_substr($this->yytext, 1, $this->yyleng-2);
 
             return 4;
         case 3:
