@@ -269,4 +269,15 @@ bar"}');
         $json = '{"k":"' . str_repeat("a\\n",10000) . '"}';
         $this->assertEquals(json_decode($json), $parser->parse($json));
     }
+
+    public function testParseNoneTerminatingString()
+    {
+        $parser = new JsonParser();
+
+        try {
+            $this->assertEquals('', $parser->parse('{"'));
+        } catch (ParsingException $e) {
+            $this->assertContains('Invalid string, it appears you forgot to terminate a string', $e->getMessage());
+        }
+    }
 }
