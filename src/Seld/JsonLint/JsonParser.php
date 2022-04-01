@@ -235,7 +235,6 @@ class JsonParser
             // use default actions if available
             if (isset($this->defaultActions[$state])) {
                 $action = $this->defaultActions[$state];
-                assert(isset($symbol));
             } else {
                 if ($symbol === null) {
                     $symbol = $this->lexer->lex();
@@ -247,6 +246,7 @@ class JsonParser
 
             // handle parse error
             if (!$action || !$action[0]) {
+                assert(isset($symbol));
                 if (!$recovering) {
                     // Report error
                     $expected = array();
@@ -335,6 +335,7 @@ class JsonParser
 
             switch ($action[0]) {
                 case 1: // shift
+                    assert(isset($symbol));
                     $this->stack[] = $symbol;
                     $this->vstack[] = $this->lexer->yytext;
                     $this->lstack[] = $this->lexer->yylloc;
