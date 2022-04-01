@@ -1,6 +1,9 @@
 parameters:
-    level: 5
+    level: 8
 
     paths:
         - src/
         - tests/
+
+    ignoreErrors:
+        - '/Method JsonParserTest::[a-zA-Z0-9]+\(\) has no return typehint/'

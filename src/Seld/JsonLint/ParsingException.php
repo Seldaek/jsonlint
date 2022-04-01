@@ -13,11 +13,14 @@ namespace Seld\JsonLint;
 
 class ParsingException extends \Exception
 {
+    /**
+     * @var array{text?: string, token?: string|int, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[]}
+     */
     protected $details;
 
     /**
      * @param string $message
-     * @phpstan-param array{text?: string, token?: string, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[]} $details
+     * @phpstan-param array{text?: string, token?: string|int, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[]} $details
      */
     public function __construct($message, $details = array())
     {
@@ -26,7 +29,7 @@ class ParsingException extends \Exception
     }
 
     /**
-     * @phpstan-return array{text?: string, token?: string, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[]}
+     * @phpstan-return array{text?: string, token?: string|int, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[]}
      */
     public function getDetails()
     {

@@ -14,23 +14,31 @@ namespace Seld\JsonLint;
 class DuplicateKeyException extends ParsingException
 {
     /**
+     * @var array{key: string, line: int}
+     */
+    protected $details;
+
+    /**
      * @param string $message
      * @param string $key
-     * @phpstan-param array{text?: string, token?: string, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[]} $details
+     * @phpstan-param array{line: int} $details
      */
-    public function __construct($message, $key, array $details = array())
+    public function __construct($message, $key, array $details)
     {
         $details['key'] = $key;
         parent::__construct($message, $details);
     }
 
+    /**
+     * @return string
+     */
     public function getKey()
     {
         return $this->details['key'];
     }
 
     /**
-     * @phpstan-return array{text?: string, token?: string, line?: int, loc?: array{first_line: int, first_column: int, last_line: int, last_column: int}, expected?: string[], key: string}
+     * @phpstan-return array{key: string, line: int}
      */
     public function getDetails()
     {

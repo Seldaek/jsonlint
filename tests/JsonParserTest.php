@@ -16,6 +16,9 @@ use Seld\JsonLint\DuplicateKeyException;
 
 class JsonParserTest extends TestCase
 {
+    /**
+     * @var list<string>
+     */
     protected $json = array(
         '42', '42.3', '0.3', '-42', '-42.3', '-0.3',
         '2e1', '2E1', '-2e1', '-2E1', '2E+2', '2E-2', '-2E+2', '-2E-2',
@@ -43,6 +46,7 @@ class JsonParserTest extends TestCase
 
     /**
      * @dataProvider provideValidStrings
+     * @param string $input
      */
     public function testParsesValidStrings($input)
     {
@@ -255,7 +259,7 @@ bar"}');
     {
         try {
             $parser = new JsonParser();
-            $parser->parse(file_get_contents(dirname(__FILE__) .'/bom.json'));
+            $parser->parse((string) file_get_contents(dirname(__FILE__) .'/bom.json'));
             $this->fail('BOM should be detected');
         } catch (ParsingException $e) {
             $this->assertContains('BOM detected', $e->getMessage());
