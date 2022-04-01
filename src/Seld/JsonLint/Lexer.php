@@ -209,7 +209,7 @@ class Lexer
         }
 
         $this->parseError(
-            'Lexical error on line ' . ($this->yylineno+1) . ". Unrecognized text.\n" . $this->showPosition(),
+            'Lexical error on line ' . ($this->yylineno+1) . ". Unrecognized text.\n" . $this->showPosition()
         );
     }
 

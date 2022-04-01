@@ -398,7 +398,7 @@ class JsonParser
      */
     protected function parseError($str, $hash = null)
     {
-        throw new ParsingException($str, $hash ?: []);
+        throw new ParsingException($str, $hash ?: array());
     }
 
     /**
