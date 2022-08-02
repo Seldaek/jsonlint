@@ -36,7 +36,7 @@ class JsonParser
 
     /**
      * @var int
-     * @psalm-var int-mask-of<self::*>
+     * @phpstan-var int-mask-of<self::*>
      */
     private $flags;
     /** @var list<int> */
@@ -177,6 +177,8 @@ class JsonParser
      * @param  string                $input JSON string
      * @param  int                   $flags Bitmask of parse/lint options (see constants of this class)
      * @return null|ParsingException null if no error is found, a ParsingException containing all details otherwise
+     *
+     * @phpstan-param int-mask-of<self::*> $flags
      */
     public function lint($input, $flags = 0)
     {
@@ -193,6 +195,8 @@ class JsonParser
      * @param  int              $flags Bitmask of parse/lint options (see constants of this class)
      * @return mixed
      * @throws ParsingException
+     *
+     * @phpstan-param int-mask-of<self::*> $flags
      */
     public function parse($input, $flags = 0)
     {
