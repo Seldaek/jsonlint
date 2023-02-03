@@ -24,26 +24,38 @@ class Lexer
     const T_INVALID = -1;
     const T_SKIP_WHITESPACE = 0;
     const T_ERROR = 2;
+    /** @internal */
+    const T_BREAK_LINE = 3;
+    /** @internal */
+    const T_COMMENT = 30;
+    /** @internal */
+    const T_OPEN_COMMENT = 31;
+    /** @internal */
+    const T_CLOSE_COMMENT = 32;
 
     /**
-     * @phpstan-var array<int<0,13>, string>
+     * @phpstan-var array<int<0,17>, string>
      * @const
      */
     private $rules = array(
-        0 => '/\G\s+/',
-        1 => '/\G-?([0-9]|[1-9][0-9]+)(\.[0-9]+)?([eE][+-]?[0-9]+)?\b/',
-        2 => '{\G"(?>\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4}|[^\0-\x1f\\\\"]++)*+"}',
-        3 => '/\G\{/',
-        4 => '/\G\}/',
-        5 => '/\G\[/',
-        6 => '/\G\]/',
-        7 => '/\G,/',
-        8 => '/\G:/',
-        9 => '/\Gtrue\b/',
-        10 => '/\Gfalse\b/',
-        11 => '/\Gnull\b/',
-        12 => '/\G$/',
-        13 => '/\G./',
+        0 => '/\G\s*\n\r?/',
+        1 => '/\G\s+/',
+        2 => '/\G-?([0-9]|[1-9][0-9]+)(\.[0-9]+)?([eE][+-]?[0-9]+)?\b/',
+        3 => '{\G"(?>\\\\["bfnrt/\\\\]|\\\\u[a-fA-F0-9]{4}|[^\0-\x1f\\\\"]++)*+"}',
+        4 => '/\G\{/',
+        5 => '/\G\}/',
+        6 => '/\G\[/',
+        7 => '/\G\]/',
+        8 => '/\G,/',
+        9 => '/\G:/',
+        10 => '/\Gtrue\b/',
+        11 => '/\Gfalse\b/',
+        12 => '/\Gnull\b/',
+        13 => '/\G$/',
+        14 => '/\G\/\//',
+        15 => '/\G\/\*/',
+        16 => '/\G\*\//',
+        17 => '/\G./',
     );
 
     /** @var string */
@@ -54,6 +66,8 @@ class Lexer
     private $done;
     /** @var 0|positive-int */
     private $offset;
+    /** @var int */
+    private $flags;
 
     /** @var string */
     public $match;
@@ -67,15 +81,41 @@ class Lexer
     public $yylloc;
 
     /**
+     * @param int $flags
+     */
+    public function __construct($flags = 0)
+    {
+        $this->flags = $flags;
+    }
+
+    /**
      * @return 1|4|6|8|10|11|14|17|18|21|22|23|24|-1
      */
     public function lex()
     {
-        do {
+        while (true) {
             $symbol = $this->next();
-        } while ($symbol === self::T_SKIP_WHITESPACE);
-
-        return $symbol;
+            switch ($symbol) {
+                case self::T_SKIP_WHITESPACE:
+                case self::T_BREAK_LINE:
+                    break;
+                case self::T_COMMENT:
+                case self::T_OPEN_COMMENT:
+                    if (!($this->flags & JsonParser::ALLOW_COMMENTS)) {
+                        $this->parseError('Lexical error on line ' . ($this->yylineno+1) . ". Comments are not allowed.\n" . $this->showPosition());
+                    }
+                    $this->skipUntil($symbol === self::T_COMMENT ? self::T_BREAK_LINE : self::T_CLOSE_COMMENT);
+                    if ($this->done) {
+                        // last symbol '/\G$/' before EOF
+                        return 14;
+                    }
+                    break;
+                case self::T_CLOSE_COMMENT:
+                    $this->parseError('Lexical error on line ' . ($this->yylineno+1) . ". Unexpected token.\n" . $this->showPosition());
+                default:
+                    return $symbol;
+            }
+        }
     }
 
     /**
@@ -160,7 +200,19 @@ class Lexer
     }
 
     /**
-     * @return 0|1|4|6|8|10|11|14|17|18|21|22|23|24|-1
+     * @param int $token
+     * @return void
+     */
+    private function skipUntil($token)
+    {
+        $symbol = $this->next();
+        while ($symbol !== $token && false === $this->done) {
+            $symbol = $this->next();
+        }
+    }
+
+    /**
+     * @return 0|1|3|4|6|8|10|11|14|17|18|21|22|23|24|30|31|32|-1
      */
     private function next()
     {
@@ -181,7 +233,7 @@ class Lexer
             $this->match = '';
         }
 
-        $rulesLen = 14; // count($this->rules)
+        $rulesLen = count($this->rules);
 
         for ($i=0; $i < $rulesLen; $i++) {
             if (preg_match($this->rules[$i], $this->input, $match, 0, $this->offset)) {
@@ -215,40 +267,47 @@ class Lexer
 
     /**
      * @param  int $rule
-     * @return 0|4|6|8|10|11|14|17|18|21|22|23|24|-1
+     * @return 0|3|4|6|8|10|11|14|17|18|21|22|23|24|30|31|32|-1
      */
     private function performAction($rule)
     {
         switch ($rule) {
-        case 0:/* skip whitespace */
+        case 0:/* skip break line */
+            return self::T_BREAK_LINE;
+        case 1:/* skip whitespace */
             return self::T_SKIP_WHITESPACE;
-        case 1:
-            return 6;
         case 2:
-            $this->yytext = substr($this->yytext, 1, $this->yyleng-2);
-
-            return 4;
+            return 6;
         case 3:
-            return 17;
+            $this->yytext = substr($this->yytext, 1, $this->yyleng-2);
+            return 4;
         case 4:
-            return 18;
+            return 17;
         case 5:
-            return 23;
+            return 18;
         case 6:
-            return 24;
+            return 23;
         case 7:
-            return 22;
+            return 24;
         case 8:
-            return 21;
+            return 22;
         case 9:
-            return 10;
+            return 21;
         case 10:
-            return 11;
+            return 10;
         case 11:
-            return 8;
+            return 11;
         case 12:
-            return 14;
+            return 8;
         case 13:
+            return 14;
+        case 14:
+            return self::T_COMMENT;
+        case 15:
+            return self::T_OPEN_COMMENT;
+        case 16:
+            return self::T_CLOSE_COMMENT;
+        case 17:
             return self::T_INVALID;
         default:
             throw new \LogicException('Unsupported rule '.$rule);

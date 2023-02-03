@@ -1,0 +1,17 @@
+{
+    //tr "test"\naabm/
+    "name": "vendor/com2",
+    "autoload": {
+        "psr-4": {
+            "Vendor\\Com1\\": "src/"
+        }
+    },
+    "repositories": [
+        {"type": "composer", "url": "https://example.com/mirror/magento/"}/*,
+        {"packagist": false}*/
+    ],//
+    "require": {
+        "firebase/php-jwt": "^6.0"//, /*
+      // "phpunit/phpunit": "^8.0"
+    }
+}//

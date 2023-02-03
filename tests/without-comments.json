@@ -1,0 +1,14 @@
+{
+    "name": "vendor/com2",
+    "autoload": {
+        "psr-4": {
+            "Vendor\\Com1\\": "src/"
+        }
+    },
+    "repositories": [
+        {"type": "composer", "url": "https://example.com/mirror/magento/"}
+    ],
+    "require": {
+        "firebase/php-jwt": "^6.0"
+    }
+}

@@ -30,6 +30,7 @@ class JsonParser
     const DETECT_KEY_CONFLICTS = 1;
     const ALLOW_DUPLICATE_KEYS = 2;
     const PARSE_TO_ASSOC = 4;
+    const ALLOW_COMMENTS = 8;
 
     /** @var Lexer */
     private $lexer;
@@ -214,7 +215,7 @@ class JsonParser
         /** @var int<0,3> */
         $recovering = 0;
 
-        $this->lexer = new Lexer();
+        $this->lexer = new Lexer($flags);
         $this->lexer->setInput($input);
 
         $yyloc = $this->lexer->yylloc;

@@ -284,4 +284,41 @@ bar"}');
             $this->assertContains('Invalid string, it appears you forgot to terminate a string', $e->getMessage());
         }
     }
+
+    /**
+     * @dataProvider provideStringsWithComments
+     * @param string $withComment
+     * @param string $valid
+     */
+    public function testParsesJsonStringWithComments($withComment, $valid)
+    {
+        $parser = new JsonParser();
+        $this->assertNotNull($parser->lint($withComment));
+        $this->assertNull($parser->lint($withComment, JsonParser::ALLOW_COMMENTS));
+
+        $this->assertEquals(json_decode($valid), $parser->parse($withComment, JsonParser::ALLOW_COMMENTS));
+    }
+
+    public function provideStringsWithComments()
+    {
+        $json = array(
+            '["a", "sdfsd"]//test' => '["a", "sdfsd"]',
+            '[/*"a",*/ "sdfsd"]//' => '["sdfsd"]',
+            '["a", "sdf//sd"]/**/' => '["a", "sdf//sd"]',
+            '/**/{/*"":*/"g":"foo"}' => '{"g":"foo"}',
+            '{"a":"b"}//, "b":"c"}' => '{"a":"b"}',
+        );
+
+        $strings = array();
+        foreach ($json as $withComment => $valid) {
+            $strings[] = array($withComment, $valid);
+        }
+
+        $strings[] = array(
+            file_get_contents(dirname(__FILE__) .'/with-comments.json'),
+            file_get_contents(dirname(__FILE__) .'/without-comments.json')
+        );
+
+        return $strings;
+    }
 }
