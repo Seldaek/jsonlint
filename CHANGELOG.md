@@ -1,5 +1,13 @@
 You can find newer changelog entries in [GitHub releases](https://github.com/Seldaek/jsonlint/releases)
 
+### 1.10.0 (2023-05-11)
+
+  * Added ALLOW_COMMENTS flag to parse while allowing (and ignoring) inline `//` and multiline `/* */` comments in the JSON document (#81)
+
+### 1.9.0 (2022-04-01)
+
+  * Internal cleanups and type fixes
+
 ### 1.8.1 (2020-08-13)
 
   * Added type annotations
