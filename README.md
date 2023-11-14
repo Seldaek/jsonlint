@@ -58,7 +58,9 @@ Installation
 
 For a quick install with Composer use:
 
-    $ composer require seld/jsonlint
+```bash
+composer require seld/jsonlint
+```
 
 JSON Lint can easily be used within another app if you have a
 [PSR-4](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-4-autoloader.md)
