@@ -16,18 +16,11 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "5.3"
-          - "5.4"
-          - "5.5"
-          - "5.6"
-          - "7.0"
-          - "7.1"
-          - "7.2"
-          - "7.3"
           - "7.4"
           - "8.0"
-          # disabled for now as it leads to PHPUnit installing in a very old 4.3 version due to phpspec/prophecy not allowing 8.1
-          # - "8.1"
+          - "8.1"
+          - "8.2"
+          - "8.3"
 
     steps:
       - name: "Checkout"
