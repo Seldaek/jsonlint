@@ -58,7 +58,7 @@ if (!empty($files)) {
 } else {
     //stdin linting
     if ($contents = file_get_contents('php://stdin')) {
-        lint($contents);
+        lint($contents, $quiet);
     } else {
         fwrite(STDERR, 'No file name or json input given' . PHP_EOL);
         exit(1);
