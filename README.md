@@ -1,7 +1,7 @@
 JSON Lint
 =========
 
-[![Build Status](https://secure.travis-ci.org/Seldaek/jsonlint.png)](http://travis-ci.org/Seldaek/jsonlint)
+[![Build Status](https://github.com/Seldaek/jsonlint/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/Seldaek/jsonlint/actions/workflows/continuous-integration.yml)
 
 Usage
 -----
