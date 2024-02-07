@@ -140,6 +140,10 @@ class Lexer
      */
     public function showPosition()
     {
+        if ($this->yylineno === 0 && $this->offset === 1 && $this->match !== '{') {
+            return $this->match.'...' . "\n^";
+        }
+
         $pre = str_replace("\n", '', $this->getPastInput());
         $c = str_repeat('-', max(0, \strlen($pre) - 1)); // new Array(pre.length + 1).join("-");
 
