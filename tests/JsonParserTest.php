@@ -19,7 +19,7 @@ class JsonParserTest extends TestCase
     /**
      * @var list<string>
      */
-    protected $json = array(
+    protected static array $json = [
         '42', '42.3', '0.3', '-42', '-42.3', '-0.3',
         '2e1', '2E1', '-2e1', '-2E1', '2E+2', '2E-2', '-2E+2', '-2E-2',
         'true', 'false', 'null', '""', '[]', '{}', '"string"',
@@ -42,23 +42,22 @@ class JsonParserTest extends TestCase
         '"Argument \u0022input\u0022 has an invalid value: ..."',
         '"👻"',
         '"\u1f47d"',
-    );
+    ];
 
     /**
      * @dataProvider provideValidStrings
-     * @param string $input
      */
-    public function testParsesValidStrings($input)
+    public function testParsesValidStrings(string $input)
     {
         $parser = new JsonParser();
         $this->assertEquals(json_decode($input), $parser->parse($input));
     }
 
-    public function provideValidStrings()
+    public static function provideValidStrings(): array
     {
-        $strings = array();
-        foreach ($this->json as $input) {
-            $strings[] = array($input);
+        $strings = [];
+        foreach (self::$json as $input) {
+            $strings[] = [$input];
         }
 
         return $strings;
@@ -73,7 +72,7 @@ class JsonParserTest extends TestCase
 }');
             $this->fail('Invalid trailing comma should be detected');
         } catch (ParsingException $e) {
-            $this->assertContains('It appears you have an extra trailing comma', $e->getMessage());
+            $this->assertStringContainsString('It appears you have an extra trailing comma', $e->getMessage());
         }
     }
 
@@ -86,7 +85,7 @@ class JsonParserTest extends TestCase
 }');
             $this->fail('Invalid quotes for string should be detected');
         } catch (ParsingException $e) {
-            $this->assertContains('Invalid string, it appears you used single quotes instead of double quotes', $e->getMessage());
+            $this->assertStringContainsString('Invalid string, it appears you used single quotes instead of double quotes', $e->getMessage());
         }
     }
 
@@ -99,7 +98,7 @@ class JsonParserTest extends TestCase
 }');
             $this->fail('Invalid unescaped string should be detected');
         } catch (ParsingException $e) {
-            $this->assertContains('Invalid string, it appears you have an unescaped backslash at: \z', $e->getMessage());
+            $this->assertStringContainsString('Invalid string, it appears you have an unescaped backslash at: \z', $e->getMessage());
         }
     }
 
@@ -148,7 +147,7 @@ EXPECTED;
             $parser->parse('{"bar": "foo}');
             $this->fail('Invalid unterminated string should be detected');
         } catch (ParsingException $e) {
-            $this->assertContains('Invalid string, it appears you forgot to terminate a string, or attempted to write a multiline string which is invalid', $e->getMessage());
+            $this->assertStringContainsString('Invalid string, it appears you forgot to terminate a string, or attempted to write a multiline string which is invalid', $e->getMessage());
         }
     }
 
@@ -160,7 +159,7 @@ EXPECTED;
 bar"}');
             $this->fail('Invalid multi-line string should be detected');
         } catch (ParsingException $e) {
-            $this->assertContains('Invalid string, it appears you forgot to terminate a string, or attempted to write a multiline string which is invalid', $e->getMessage());
+            $this->assertStringContainsString('Invalid string, it appears you forgot to terminate a string, or attempted to write a multiline string which is invalid', $e->getMessage());
         }
     }
 
@@ -173,7 +172,7 @@ bar"}');
 ');
             $this->fail('Empty string should be invalid');
         } catch (ParsingException $e) {
-            $this->assertContains("Parse error on line 1:\n\n^", $e->getMessage());
+            $this->assertStringContainsString("Parse error on line 1:\n\n^", $e->getMessage());
         }
     }
 
@@ -191,7 +190,7 @@ bar"}');
     public function testParsesMultiInARow()
     {
         $parser = new JsonParser();
-        foreach ($this->json as $input) {
+        foreach (self::$json as $input) {
             $this->assertEquals(json_decode($input), $parser->parse($input));
         }
     }
@@ -204,26 +203,9 @@ bar"}');
             $parser->parse('{"a":"b", "a":"c"}', JsonParser::DETECT_KEY_CONFLICTS);
             $this->fail('Duplicate keys should not be allowed');
         } catch (DuplicateKeyException $e) {
-            $this->assertContains('Duplicate key: a', $e->getMessage());
+            $this->assertStringContainsString('Duplicate key: a', $e->getMessage());
             $this->assertSame('a', $e->getKey());
-            $this->assertSame(array('line' => 1, 'key' => 'a'), $e->getDetails());
-        }
-    }
-
-    public function testDetectsKeyOverridesWithEmpty()
-    {
-        $parser = new JsonParser();
-
-        if (PHP_VERSION_ID >= 70100) {
-            $this->markTestSkipped('Only for PHP < 7.1');
-        }
-        try {
-            $parser->parse('{"":"b", "_empty_":"a"}', JsonParser::DETECT_KEY_CONFLICTS);
-            $this->fail('Duplicate keys should not be allowed');
-        } catch (DuplicateKeyException $e) {
-            $this->assertContains('Duplicate key: _empty_', $e->getMessage());
-            $this->assertSame('_empty_', $e->getKey());
-            $this->assertSame(array('line' => 1, 'key' => '_empty_'), $e->getDetails());
+            $this->assertSame(['line' => 1, 'key' => 'a'], $e->getDetails());
         }
     }
 
@@ -232,28 +214,11 @@ bar"}');
         $parser = new JsonParser();
 
         $result = $parser->parse('{"a":"b", "a":"c", "a":"d"}', JsonParser::ALLOW_DUPLICATE_KEYS);
-        $this->assertThat($result,
-            $this->logicalAnd(
-                $this->objectHasAttribute('a'),
-                $this->objectHasAttribute('a.1'),
-                $this->objectHasAttribute('a.2')
-            )
-        );
-    }
 
-    public function testDuplicateKeysWithEmpty()
-    {
-        $parser = new JsonParser();
-
-        if (PHP_VERSION_ID >= 70100) {
-            $this->markTestSkipped('Only for PHP < 7.1');
-        }
-        $result = $parser->parse('{"":"a", "_empty_":"b"}', JsonParser::ALLOW_DUPLICATE_KEYS);
-        $this->assertThat($result,
-            $this->logicalAnd(
-                $this->objectHasAttribute('_empty_'),
-                $this->objectHasAttribute('_empty_.1')
-            )
+        $this->assertTrue(
+            property_exists($result, 'a') &&
+            property_exists($result, 'a.1') &&
+            property_exists($result, 'a.2')
         );
     }
 
@@ -273,7 +238,7 @@ bar"}');
             $parser->parse((string) file_get_contents(dirname(__FILE__) .'/bom.json'));
             $this->fail('BOM should be detected');
         } catch (ParsingException $e) {
-            $this->assertContains('BOM detected', $e->getMessage());
+            $this->assertStringContainsString('BOM detected', $e->getMessage());
         }
     }
 
@@ -292,7 +257,7 @@ bar"}');
         try {
             $this->assertEquals('', $parser->parse('{"'));
         } catch (ParsingException $e) {
-            $this->assertContains('Invalid string, it appears you forgot to terminate a string', $e->getMessage());
+            $this->assertStringContainsString('Invalid string, it appears you forgot to terminate a string', $e->getMessage());
         }
     }
 
@@ -310,25 +275,25 @@ bar"}');
         $this->assertEquals(json_decode($valid), $parser->parse($withComment, JsonParser::ALLOW_COMMENTS));
     }
 
-    public function provideStringsWithComments()
+    public static function provideStringsWithComments(): array
     {
-        $json = array(
+        $json = [
             '["a", "sdfsd"]//test' => '["a", "sdfsd"]',
             '[/*"a",*/ "sdfsd"]//' => '["sdfsd"]',
             '["a", "sdf//sd"]/**/' => '["a", "sdf//sd"]',
             '/**/{/*"":*/"g":"foo"}' => '{"g":"foo"}',
             '{"a":"b"}//, "b":"c"}' => '{"a":"b"}',
-        );
+        ];
 
-        $strings = array();
+        $strings = [];
         foreach ($json as $withComment => $valid) {
-            $strings[] = array($withComment, $valid);
+            $strings[] = [$withComment, $valid];
         }
 
-        $strings[] = array(
-            file_get_contents(dirname(__FILE__) .'/with-comments.json'),
-            file_get_contents(dirname(__FILE__) .'/without-comments.json')
-        );
+        $strings[] = [
+            file_get_contents(__DIR__ .'/with-comments.json'),
+            file_get_contents(__DIR__ .'/without-comments.json')
+        ];
 
         return $strings;
     }
