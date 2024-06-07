@@ -231,7 +231,9 @@ bar"}');
     {
         $parser = new JsonParser();
 
-        $result = $parser->parse('{"a":"b", "a":"c", "a":"d"}', JsonParser::ALLOW_DUPLICATE_KEYS);
+        $str = '{"a":"b", "a":"c", "a":"d"}';
+
+        $result = $parser->parse($str, JsonParser::ALLOW_DUPLICATE_KEYS);
         $this->assertThat($result,
             $this->logicalAnd(
                 $this->objectHasAttribute('a'),
@@ -239,6 +241,9 @@ bar"}');
                 $this->objectHasAttribute('a.2')
             )
         );
+
+        $result = $parser->parse($str, JsonParser::ALLOW_DUPLICATE_KEYS_TO_ARRAY);
+        $this->assertTrue(isset($result->a->__duplicates__[2]));
     }
 
     public function testDuplicateKeysWithEmpty()

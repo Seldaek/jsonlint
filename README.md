@@ -35,6 +35,7 @@ You can also pass additional flags to `JsonParser::lint/parse` that tweak the fu
 - `JsonParser::ALLOW_DUPLICATE_KEYS` collects duplicate keys. e.g. if you have two `foo` keys they will end up as `foo` and `foo.2`.
 - `JsonParser::PARSE_TO_ASSOC` parses to associative arrays instead of stdClass objects.
 - `JsonParser::ALLOW_COMMENTS` parses while allowing (and ignoring) inline `//` and multiline `/* */` comments in the JSON document.
+- `JsonParser::ALLOW_DUPLICATE_KEYS_TO_ARRAY` collects duplicate keys. e.g. if you have two `foo` keys they will saved as array elements in object property (array key) `__duplicates__`.
 
 Example:
 

@@ -31,6 +31,7 @@ class JsonParser
     const ALLOW_DUPLICATE_KEYS = 2;
     const PARSE_TO_ASSOC = 4;
     const ALLOW_COMMENTS = 8;
+    const ALLOW_DUPLICATE_KEYS_TO_ARRAY = 16;
 
     /** @var Lexer */
     private $lexer;
@@ -484,14 +485,14 @@ class JsonParser
                     $errStr .= $this->lexer->showPosition() . "\n";
                     $errStr .= "Duplicate key: ".$this->vstack[$len][0];
                     throw new DuplicateKeyException($errStr, $this->vstack[$len][0], array('line' => $yylineno+1));
-                } elseif (($this->flags & self::ALLOW_DUPLICATE_KEYS) && isset($this->vstack[$len-2][$key])) {
-                    $duplicateCount = 1;
-                    do {
-                        $duplicateKey = $key . '.' . $duplicateCount++;
-                    } while (isset($this->vstack[$len-2][$duplicateKey]));
-                    $key = $duplicateKey;
+                } elseif (($this->flags & self::ALLOW_DUPLICATE_KEYS_TO_ARRAY) && isset($this->vstack[$len-2][$key])) {
+                    if (!isset($this->vstack[$len-2][$key]['__duplicates__'])) {
+                        $this->vstack[$len-2][$key] = ['__duplicates__' => [ $this->vstack[$len-2][$key] ]];
+                    }
+                    $this->vstack[$len-2][$key]['__duplicates__'][] = $this->vstack[$len][1];
+                } else {
+                    $this->vstack[$len-2][$key] = $this->vstack[$len][1];
                 }
-                $this->vstack[$len-2][$key] = $this->vstack[$len][1];
             } else {
                 assert($this->vstack[$len-2] instanceof stdClass);
                 $token = $this->vstack[$len-2];
@@ -505,14 +506,14 @@ class JsonParser
                     $errStr .= $this->lexer->showPosition() . "\n";
                     $errStr .= "Duplicate key: ".$this->vstack[$len][0];
                     throw new DuplicateKeyException($errStr, $this->vstack[$len][0], array('line' => $yylineno+1));
-                } elseif (($this->flags & self::ALLOW_DUPLICATE_KEYS) && isset($this->vstack[$len-2]->{$key})) {
-                    $duplicateCount = 1;
-                    do {
-                        $duplicateKey = $key . '.' . $duplicateCount++;
-                    } while (isset($this->vstack[$len-2]->$duplicateKey));
-                    $key = $duplicateKey;
+                } elseif (($this->flags & self::ALLOW_DUPLICATE_KEYS_TO_ARRAY) && isset($this->vstack[$len-2]->{$key})) {
+                    if (!isset($this->vstack[$len-2]->$key->__duplicates__)) {
+                        $this->vstack[$len-2]->$key = (object) ['__duplicates__' => [ $this->vstack[$len-2]->$key ]];
+                    }
+                    $this->vstack[$len-2]->$key->__duplicates__[] = $this->vstack[$len][1];
+                } else {
+                    $this->vstack[$len-2]->$key = $this->vstack[$len][1];
                 }
-                $this->vstack[$len-2]->$key = $this->vstack[$len][1];
             }
             break;
         case 18:
