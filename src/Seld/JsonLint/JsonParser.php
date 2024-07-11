@@ -497,7 +497,7 @@ class JsonParser
                     } while (isset($this->vstack[$len-2][$duplicateKey]));
                     $this->vstack[$len-2][$duplicateKey] = $this->vstack[$len][1];
                 } elseif (($this->flags & self::ALLOW_DUPLICATE_KEYS_TO_ARRAY) && isset($this->vstack[$len-2][$key])) {
-                    if (!isset($this->vstack[$len-2][$key]['__duplicates__'])) {
+                    if (!isset($this->vstack[$len-2][$key]['__duplicates__']) || !is_array($this->vstack[$len-2][$key]['__duplicates__'])) {
                         $this->vstack[$len-2][$key] = array('__duplicates__' => array($this->vstack[$len-2][$key]));
                     }
                     $this->vstack[$len-2][$key]['__duplicates__'][] = $this->vstack[$len][1];
