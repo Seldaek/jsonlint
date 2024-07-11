@@ -242,8 +242,24 @@ bar"}');
             )
         );
 
+        $result = $parser->parse($str, JsonParser::ALLOW_DUPLICATE_KEYS | JsonParser::PARSE_TO_ASSOC);
+        self::assertSame(['a' => 'b', 'a.1' => 'c', 'a.2' => 'd'], $result);
+    }
+
+    public function testDuplicateKeysToArray()
+    {
+        $parser = new JsonParser();
+
+        $str = '{"a":"b", "a":"c", "a":"d"}';
+
         $result = $parser->parse($str, JsonParser::ALLOW_DUPLICATE_KEYS_TO_ARRAY);
         $this->assertTrue(isset($result->a->__duplicates__[2]));
+        $this->assertThat($result, $this->objectHasAttribute('a'));
+        $this->assertThat($result->a, $this->objectHasAttribute('__duplicates__'));
+        self::assertSame(['b', 'c', 'd'], $result->a->__duplicates__);
+
+        $result = $parser->parse($str, JsonParser::ALLOW_DUPLICATE_KEYS_TO_ARRAY | JsonParser::PARSE_TO_ASSOC);
+        self::assertSame(['a' => ['__duplicates__' => ['b', 'c', 'd']]], $result);
     }
 
     public function testDuplicateKeysWithEmpty()

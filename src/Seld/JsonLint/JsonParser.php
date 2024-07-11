@@ -485,6 +485,13 @@ class JsonParser
                     $errStr .= $this->lexer->showPosition() . "\n";
                     $errStr .= "Duplicate key: ".$this->vstack[$len][0];
                     throw new DuplicateKeyException($errStr, $this->vstack[$len][0], array('line' => $yylineno+1));
+                }
+                if (($this->flags & self::ALLOW_DUPLICATE_KEYS) && isset($this->vstack[$len-2][$key])) {
+                    $duplicateCount = 1;
+                    do {
+                        $duplicateKey = $key . '.' . $duplicateCount++;
+                    } while (isset($this->vstack[$len-2][$duplicateKey]));
+                    $this->vstack[$len-2][$duplicateKey] = $this->vstack[$len][1];
                 } elseif (($this->flags & self::ALLOW_DUPLICATE_KEYS_TO_ARRAY) && isset($this->vstack[$len-2][$key])) {
                     if (!isset($this->vstack[$len-2][$key]['__duplicates__'])) {
                         $this->vstack[$len-2][$key] = ['__duplicates__' => [ $this->vstack[$len-2][$key] ]];
@@ -506,6 +513,13 @@ class JsonParser
                     $errStr .= $this->lexer->showPosition() . "\n";
                     $errStr .= "Duplicate key: ".$this->vstack[$len][0];
                     throw new DuplicateKeyException($errStr, $this->vstack[$len][0], array('line' => $yylineno+1));
+                }
+                if (($this->flags & self::ALLOW_DUPLICATE_KEYS) && isset($this->vstack[$len-2]->{$key})) {
+                    $duplicateCount = 1;
+                    do {
+                        $duplicateKey = $key . '.' . $duplicateCount++;
+                    } while (isset($this->vstack[$len-2]->$duplicateKey));
+                    $this->vstack[$len-2]->$duplicateKey = $this->vstack[$len][1];
                 } elseif (($this->flags & self::ALLOW_DUPLICATE_KEYS_TO_ARRAY) && isset($this->vstack[$len-2]->{$key})) {
                     if (!isset($this->vstack[$len-2]->$key->__duplicates__)) {
                         $this->vstack[$len-2]->$key = (object) ['__duplicates__' => [ $this->vstack[$len-2]->$key ]];
