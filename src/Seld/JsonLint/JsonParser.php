@@ -202,6 +202,10 @@ class JsonParser
      */
     public function parse($input, $flags = 0)
     {
+        if (($flags & self::ALLOW_DUPLICATE_KEYS_TO_ARRAY) && ($flags & self::ALLOW_DUPLICATE_KEYS)) {
+            throw new \InvalidArgumentException('Only one of ALLOW_DUPLICATE_KEYS and ALLOW_DUPLICATE_KEYS_TO_ARRAY can be used, you passed in both.');
+        }
+
         $this->failOnBOM($input);
 
         $this->flags = $flags;
