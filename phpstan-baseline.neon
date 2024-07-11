@@ -1,0 +1,16 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Cannot access offset 1 on array\\|bool\\|float\\|int\\|stdClass\\|string\\|null\\.$#"
+			count: 1
+			path: src/Seld/JsonLint/JsonParser.php
+
+		-
+			message: "#^Property Seld\\\\JsonLint\\\\JsonParser\\:\\:\\$vstack \\(list\\<array\\|bool\\|float\\|int\\|stdClass\\|string\\|null\\>\\) does not accept non\\-empty\\-array\\<int\\<\\-3, max\\>, array\\|bool\\|float\\|int\\|stdClass\\|string\\|null\\>\\.$#"
+			count: 4
+			path: src/Seld/JsonLint/JsonParser.php
+
+		-
+			message: "#^Property Seld\\\\JsonLint\\\\JsonParser\\:\\:\\$vstack \\(list\\<array\\|bool\\|float\\|int\\|stdClass\\|string\\|null\\>\\) does not accept non\\-empty\\-array\\<int\\<\\-3, max\\>, mixed\\>\\.$#"
+			count: 1
+			path: src/Seld/JsonLint/JsonParser.php

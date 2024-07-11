@@ -1,5 +1,11 @@
+includes:
+    - phpstan-baseline.neon
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+
 parameters:
     level: 8
+
+    treatPhpDocTypesAsCertain: false
 
     paths:
         - src/
