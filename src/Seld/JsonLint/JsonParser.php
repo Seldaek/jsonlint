@@ -29,7 +29,7 @@ class JsonParser
 {
     const DETECT_KEY_CONFLICTS = 1;
     const ALLOW_DUPLICATE_KEYS = 2;
-    const PARSE_TO_ASSOC = 4;
+    const PARSE_TO_AOC = 4;
     const ALLOW_COMMENTS = 8;
     const ALLOW_DUPLICATE_KEYS_TO_ARRAY = 16;
     const VALIDATE_UTF8_ENCODING = 32;
@@ -44,7 +44,7 @@ class JsonParser
     private $flags;
     /** @var list<int> */
     private $stack;
-    /** @var list<stdClass|array<mixed>|int|bool|float|string|null> */
+    /** @var list<stdCla|array<mixed>|int|bool|float|string|null> */
     private $vstack; // semantic value stack
     /** @var list<array{first_line: int, first_column: int, last_line: int, last_column: int}> */
     private $lstack; // location stack
@@ -634,7 +634,7 @@ class JsonParser
                         "Non-UTF8 character found on line "
                         .$iCurrentLineNumber
                         ."; the octet "
-                        .($iOffsetInOctetssFromLineStart + 1)
+                        .($iOffsetInOctetsFromLineStart + 1)
                         .", part of the character "
                         .($iOffsetInCharactersFromLineStart + 1)
                         .", has value "
@@ -675,7 +675,7 @@ class JsonParser
                     "Non-UTF8 character found on line "
                     .$iCurrentLineNumber
                     ."; the octet "
-                    .($iOffsetInOctetssFromLineStart + 1)
+                    .($iOffsetInOctetsFromLineStart + 1)
                     .", part of the character "
                     .($iOffsetInCharactersFromLineStart + 1)
                     .", has value "
@@ -716,7 +716,7 @@ class JsonParser
                  "Non-UTF8 character found on line "
                 .$iCurrentLineNumber
                 ."; the octet "
-                .($iOffsetInOctetssFromLineStart + 1)
+                .($iOffsetInOctetsFromLineStart + 1)
                 .", part of the character "
                 .($iOffsetInCharactersFromLineStart + 1)
                 .", has value "
