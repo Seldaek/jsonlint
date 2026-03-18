@@ -634,7 +634,7 @@ class JsonParser
                         "Non-UTF8 character found on line "
                         .$iCurrentLineNumber
                         ."; the octet "
-                        .($iOffsetInOctetssFromLineStart + 1)
+                        .($iOffsetInOctetsFromLineStart + 1)
                         .", part of the character "
                         .($iOffsetInCharactersFromLineStart + 1)
                         .", has value "
@@ -675,7 +675,7 @@ class JsonParser
                     "Non-UTF8 character found on line "
                     .$iCurrentLineNumber
                     ."; the octet "
-                    .($iOffsetInOctetssFromLineStart + 1)
+                    .($iOffsetInOctetsFromLineStart + 1)
                     .", part of the character "
                     .($iOffsetInCharactersFromLineStart + 1)
                     .", has value "
@@ -716,7 +716,7 @@ class JsonParser
                  "Non-UTF8 character found on line "
                 .$iCurrentLineNumber
                 ."; the octet "
-                .($iOffsetInOctetssFromLineStart + 1)
+                .($iOffsetInOctetsFromLineStart + 1)
                 .", part of the character "
                 .($iOffsetInCharactersFromLineStart + 1)
                 .", has value "
