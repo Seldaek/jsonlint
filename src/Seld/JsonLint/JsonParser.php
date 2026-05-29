@@ -29,9 +29,10 @@ class JsonParser
 {
     const DETECT_KEY_CONFLICTS = 1;
     const ALLOW_DUPLICATE_KEYS = 2;
-    const PARSE_TO_ASSOC = 4;
+    const PARSE_TO_AOC = 4;
     const ALLOW_COMMENTS = 8;
     const ALLOW_DUPLICATE_KEYS_TO_ARRAY = 16;
+    const VALIDATE_UTF8_ENCODING = 32;
 
     /** @var Lexer */
     private $lexer;
@@ -43,7 +44,7 @@ class JsonParser
     private $flags;
     /** @var list<int> */
     private $stack;
-    /** @var list<stdClass|array<mixed>|int|bool|float|string|null> */
+    /** @var list<stdCla|array<mixed>|int|bool|float|string|null> */
     private $vstack; // semantic value stack
     /** @var list<array{first_line: int, first_column: int, last_line: int, last_column: int}> */
     private $lstack; // location stack
@@ -184,6 +185,13 @@ class JsonParser
      */
     public function lint($input, $flags = 0)
     {
+        if ($flags & self::VALIDATE_UTF8_ENCODING) {
+            try {
+                $this->validateUTF8Encoding($input);
+            } catch (InvalidEncodingException $e) {
+                return $e;
+            }
+        }
         try {
             $this->parse($input, $flags);
         } catch (ParsingException $e) {
@@ -603,6 +611,132 @@ class JsonParser
 
         if (substr($input, 0, 3) === $bom) {
             $this->parseError("BOM detected, make sure your input does not include a Unicode Byte-Order-Mark");
+        }
+    }
+
+    /**
+     * @param  string $input
+     * @return void
+     */
+    private function validateUTF8Encoding($input)
+    {
+        $iContinuationOctetNeeded = 0;
+        $iCharacterStartPosition = 0;
+        $iCurrentLineNumber = 1;
+        $iOffsetInOctetsFromLineStart = -1;
+        $iOffsetInCharactersFromLineStart = -1;
+        for ($i = 0, $iMax = strlen($input); $i < $iMax; ++$i) {
+            $iCurrentOctet = ord($input[$i]);
+            $iOffsetInOctetsFromLineStart += 1;
+            if ($iContinuationOctetNeeded > 0) {
+                if ($iCurrentOctet < 128 || $iCurrentOctet >= 192) {
+                    throw new InvalidEncodingException(
+                        "Non-UTF8 character found on line "
+                        .$iCurrentLineNumber
+                        ."; the octet "
+                        .($iOffsetInOctetsFromLineStart + 1)
+                        .", part of the character "
+                        .($iOffsetInCharactersFromLineStart + 1)
+                        .", has value "
+                        .$iCurrentOctet
+                        ." which is not a continuation octet."
+                        ." (Sequential positions in octets without line splitting:"
+                        ." character start position "
+                        .$iCharacterStartPosition
+                        .", octet position "
+                        .$i
+                        .")",
+                        $iCurrentOctet,
+                        array(
+                           'line' => $iCurrentLineNumber,
+                           'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
+                           'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
+                           'octet_position' => $i,
+                           'character_start_position' => $iCharacterStartPosition,
+                       )
+                    );
+                }
+                --$iContinuationOctetNeeded;
+                continue;
+            }
+
+            $iCharacterStartPosition = $i;
+            $iOffsetInCharactersFromLineStart += 1;
+            if ($iCurrentOctet < 128) { // 0xxxxxxx ASCII
+                if ($input[$i] === "\n") {
+                    $iCurrentLineNumber += 1;
+                    $iOffsetInOctetsFromLineStart = -1;
+                    $iOffsetInCharactersFromLineStart = -1;
+                }
+                continue;
+            }
+            if ($iCurrentOctet >= 128 && $iCurrentOctet < 192) {
+                throw new InvalidEncodingException(
+                    "Non-UTF8 character found on line "
+                    .$iCurrentLineNumber
+                    ."; the octet "
+                    .($iOffsetInOctetsFromLineStart + 1)
+                    .", part of the character "
+                    .($iOffsetInCharactersFromLineStart + 1)
+                    .", has value "
+                    .$iCurrentOctet
+                    ." which is a continuation octet."
+                    ." (Sequential positions in octets without line splitting:"
+                    ." character start position "
+                    .$iCharacterStartPosition
+                    .", octet position "
+                    .$i
+                    .")",
+                    $iCurrentOctet,
+                    array(
+                        'line' => $iCurrentLineNumber,
+                        'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
+                        'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
+                        'octet_position' => $i,
+                        'character_start_position' => $iCharacterStartPosition,
+                    )
+                );
+            }
+            if ($iCurrentOctet >= 192 && $iCurrentOctet < 224) {
+                // 110xxxxx 10xxxxxx
+                $iContinuationOctetNeeded = 1;
+                continue;
+            }
+            if ($iCurrentOctet >= 224 && $iCurrentOctet < 240) {
+                // 1110xxxx 10xxxxxx 10xxxxxx
+                $iContinuationOctetNeeded = 2;
+                continue;
+            }
+            if ($iCurrentOctet >= 240 && $iCurrentOctet < 248) {
+                // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+                $iContinuationOctetNeeded = 3;
+                continue;
+            }
+            throw new InvalidEncodingException(
+                 "Non-UTF8 character found on line "
+                .$iCurrentLineNumber
+                ."; the octet "
+                .($iOffsetInOctetsFromLineStart + 1)
+                .", part of the character "
+                .($iOffsetInCharactersFromLineStart + 1)
+                .", has value "
+                .$iCurrentOctet
+                ." which is invalid."
+                ." (Sequential positions in octets without line splitting:"
+                ." character start position "
+                .$iCharacterStartPosition
+                .", octet position "
+                .$i
+                .")",
+                $iCurrentOctet,
+                array(
+                    'line' => $iCurrentLineNumber,
+                    'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
+                    'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
+                    'octet_position' => $i,
+                    'character_start_position' => $iCharacterStartPosition,
+                )
+            );
         }
     }
 }
