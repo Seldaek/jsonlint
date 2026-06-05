@@ -29,12 +29,30 @@ use Seld\JsonLint\JsonParser;
 
 $files = array();
 $quiet = false;
+$allowComments = false;
+$allowDuplicateKeys = false; // Not really useful for the command-line linting
+$allowDuplicateKeysToArray = false; // Not really useful for the command-line linting
+$detectKeyConflicts = false;
+$parseToAssoc = false; // Not really useful for the command-line linting
+$validateUTF8Encoding = false;
 
 if (isset($_SERVER['argc']) && $_SERVER['argc'] > 1) {
     for ($i = 1; $i < $_SERVER['argc']; $i++) {
         $arg = $_SERVER['argv'][$i];
         if ($arg == '-q' || $arg == '--quiet') {
             $quiet = true;
+        } elseif ($arg === '--allow-comments') {
+            $allowComments = true;
+        } elseif ($arg === '--allow-duplicate-keys') {
+            $allowDuplicateKeys = true;
+        } elseif ($arg === '--allow-duplicate-keys-to-array') {
+            $allowDuplicateKeysToArray = true;
+        } elseif ($arg === '--detect-key-conflicts') {
+            $detectKeyConflicts = true;
+        } elseif ($arg === '--parse-to-assoc') {
+            $parseToAssoc = true;
+        } elseif ($arg === '--validate-utf8-encoding') {
+            $validateUTF8Encoding = true;
         } else {
             if ($arg == '-h' || $arg == '--help') {
                 showUsage($_SERVER['argv'][0]);
@@ -45,11 +63,20 @@ if (isset($_SERVER['argc']) && $_SERVER['argc'] > 1) {
     }
 }
 
+$flags = getFlags(
+  $allowComments,
+  $allowDuplicateKeys,
+  $allowDuplicateKeysToArray,
+  $detectKeyConflicts,
+  $parseToAssoc,
+  $validateUTF8Encoding,
+);
+
 if (!empty($files)) {
     // file linting
     $exitCode = 0;
     foreach ($files as $file) {
-        $result = lintFile($file, $quiet);
+        $result = lintFile($file, $quiet, $flags);
         if ($result === false) {
             $exitCode = 1;
         }
@@ -58,18 +85,36 @@ if (!empty($files)) {
 } else {
     //stdin linting
     if ($contents = file_get_contents('php://stdin')) {
-        lint($contents, $quiet);
+        lint($contents, $quiet, $flags);
     } else {
         fwrite(STDERR, 'No file name or json input given' . PHP_EOL);
         exit(1);
     }
 }
 
+function getFlags(
+    $allowComments = false,
+    $allowDuplicateKeys = false,
+    $allowDuplicateKeysToArray = false,
+    $detectKeyConflicts = false,
+    $parseToAssoc = false,
+    $validateUTF8Encoding = false,
+){
+    $flags = 0;
+    if($allowComments){ $flags |= JsonParser::ALLOW_COMMENTS; }
+    if($allowDuplicateKeys){ $flags |= JsonParser::ALLOW_DUPLICATE_KEYS; }
+    if($allowDuplicateKeysToArray){ $flags |= JsonParser::ALLOW_DUPLICATE_KEYS_TO_ARRAY; }
+    if($detectKeyConflicts){ $flags |= JsonParser::DETECT_KEY_CONFLICTS; }
+    if($parseToAssoc){ $flags |= JsonParser::PARSE_TO_ASSOC; }
+    // TODO if($validateUTF8Encoding){ $flags |= JsonParser::VALIDATE_UTF8_ENCODING; }
+    return $flags;
+}
+
 // stdin lint function
-function lint($content, $quiet = false)
+function lint($content, $quiet = false, $flags = 0)
 {
     $parser = new JsonParser();
-    if ($err = $parser->lint($content)) {
+    if ($err = $parser->lint($content, $flags)) {
         fwrite(STDERR, $err->getMessage() . ' (stdin)' . PHP_EOL);
         exit(1);
     }
@@ -80,7 +125,7 @@ function lint($content, $quiet = false)
 }
 
 // file lint function
-function lintFile($file, $quiet = false)
+function lintFile($file, $quiet = false, $flags = 0)
 {
     if (!preg_match('{^https?://}i', $file)) {
         if (!file_exists($file)) {
@@ -95,7 +140,7 @@ function lintFile($file, $quiet = false)
 
     $content = file_get_contents($file);
     $parser = new JsonParser();
-    if ($err = $parser->lint($content)) {
+    if ($err = $parser->lint($content, $flags)) {
         fwrite(STDERR, $file . ': ' . $err->getMessage() . PHP_EOL);
         return false;
     }
@@ -113,5 +158,15 @@ function showUsage($programPath)
     echo 'Options:'.PHP_EOL;
     echo '  -q, --quiet     Cause jsonlint to be quiet when no errors are found'.PHP_EOL;
     echo '  -h, --help      Show this message'.PHP_EOL;
+    echo '  --allow-comments Cause jsonlint to enable syntax for comments similar to JSON5.'.PHP_EOL;
+    echo '  --allow-duplicate-keys Cause value V of duplicate key K to be stored under the key K suffixed with duplication count.'.PHP_EOL;
+    echo '  --allow-duplicate-keys-to-array Cause value V of duplicate key K of object Ob to be stored:'.PHP_EOL;
+    echo '                                   - if --parse-to-assoc is set, Ob[K] becomes a subarray and V is stored in Ob[K][__duplicates__];'.PHP_EOL;
+    echo '                                   - if --parse-to-assoc is unset, Ob[K] becomes an object and V is stored in Ob->K->__duplicates__.'.PHP_EOL;
+    echo '  --detect-key-conflicts Cause jsonlint to detect key conflicts in objects.'.PHP_EOL;
+    echo '                         When activated, --allow-duplicate-keys and --allow-duplicate-keys-to-arrays are ignored.'.PHP_EOL;
+    echo '                         When none of --detect-key-conflicts, --allow-duplicate-keys and --allow-duplicate-keys-to-arrays are set, then the last value with the same key is kept by overwriting mechanism.'.PHP_EOL;
+    echo '  --parse-to-assoc Cause jsonlint to store data from JSON objects in a PHP associative array instead of a PHP object.'.PHP_EOL;
+    // TODO echo '  --validate-utf8-encoding Cause jsonlint to validate that the whole file is valid UTF-8 encoding.'.PHP_EOL;
     exit(0);
 }
