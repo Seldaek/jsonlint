@@ -646,7 +646,7 @@ class JsonParser
                         .", octet position "
                         .$i
                         .")",
-                        $iCurrentOctet,
+                        (string) $iCurrentOctet,
                         array(
                            'line' => $iCurrentLineNumber,
                            'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
@@ -670,7 +670,7 @@ class JsonParser
                 }
                 continue;
             }
-            if ($iCurrentOctet >= 128 && $iCurrentOctet < 192) {
+            if (/*$iCurrentOctet >= 128 &&*/$iCurrentOctet < 192) {
                 throw new InvalidEncodingException(
                     "Non-UTF8 character found on line "
                     .$iCurrentLineNumber
@@ -687,7 +687,7 @@ class JsonParser
                     .", octet position "
                     .$i
                     .")",
-                    $iCurrentOctet,
+                    (string) $iCurrentOctet,
                     array(
                         'line' => $iCurrentLineNumber,
                         'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
@@ -697,17 +697,17 @@ class JsonParser
                     )
                 );
             }
-            if ($iCurrentOctet >= 192 && $iCurrentOctet < 224) {
+            if (/*$iCurrentOctet >= 192 &&*/$iCurrentOctet < 224) {
                 // 110xxxxx 10xxxxxx
                 $iContinuationOctetNeeded = 1;
                 continue;
             }
-            if ($iCurrentOctet >= 224 && $iCurrentOctet < 240) {
+            if (/*$iCurrentOctet >= 224 &&*/$iCurrentOctet < 240) {
                 // 1110xxxx 10xxxxxx 10xxxxxx
                 $iContinuationOctetNeeded = 2;
                 continue;
             }
-            if ($iCurrentOctet >= 240 && $iCurrentOctet < 248) {
+            if (/*$iCurrentOctet >= 240 &&*/$iCurrentOctet < 248) {
                 // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
                 $iContinuationOctetNeeded = 3;
                 continue;
@@ -728,7 +728,7 @@ class JsonParser
                 .", octet position "
                 .$i
                 .")",
-                $iCurrentOctet,
+                (string)$iCurrentOctet,
                 array(
                     'line' => $iCurrentLineNumber,
                     'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
