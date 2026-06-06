@@ -73,7 +73,7 @@ class JsonParserTest extends TestCase
 }');
             $this->fail('Invalid trailing comma should be detected');
         } catch (ParsingException $e) {
-            $this->assertContains('It appears you have an extra trailing comma', $e->getMessage());
+            $this->assertStringContainsString('It appears you have an extra trailing comma', $e->getMessage());
         }
     }
 
@@ -86,7 +86,7 @@ class JsonParserTest extends TestCase
 }');
             $this->fail('Invalid quotes for string should be detected');
         } catch (ParsingException $e) {
-            $this->assertContains('Invalid string, it appears you used single quotes instead of double quotes', $e->getMessage());
+            $this->assertStringContainsString('Invalid string, it appears you used single quotes instead of double quotes', $e->getMessage());
         }
     }
 
@@ -99,7 +99,7 @@ class JsonParserTest extends TestCase
 }');
             $this->fail('Invalid unescaped string should be detected');
         } catch (ParsingException $e) {
-            $this->assertContains('Invalid string, it appears you have an unescaped backslash at: \z', $e->getMessage());
+            $this->assertStringContainsString('Invalid string, it appears you have an unescaped backslash at: \z', $e->getMessage());
         }
     }
 
@@ -148,7 +148,7 @@ EXPECTED;
             $parser->parse('{"bar": "foo}');
             $this->fail('Invalid unterminated string should be detected');
         } catch (ParsingException $e) {
-            $this->assertContains('Invalid string, it appears you forgot to terminate a string, or attempted to write a multiline string which is invalid', $e->getMessage());
+            $this->assertStringContainsString('Invalid string, it appears you forgot to terminate a string, or attempted to write a multiline string which is invalid', $e->getMessage());
         }
     }
 
@@ -160,7 +160,7 @@ EXPECTED;
 bar"}');
             $this->fail('Invalid multi-line string should be detected');
         } catch (ParsingException $e) {
-            $this->assertContains('Invalid string, it appears you forgot to terminate a string, or attempted to write a multiline string which is invalid', $e->getMessage());
+            $this->assertStringContainsString('Invalid string, it appears you forgot to terminate a string, or attempted to write a multiline string which is invalid', $e->getMessage());
         }
     }
 
@@ -173,7 +173,7 @@ bar"}');
 ');
             $this->fail('Empty string should be invalid');
         } catch (ParsingException $e) {
-            $this->assertContains("Parse error on line 1:\n\n^", $e->getMessage());
+            $this->assertStringContainsString("Parse error on line 1:\n\n^", $e->getMessage());
         }
     }
 
@@ -184,7 +184,7 @@ bar"}');
             $parser->parse('ABCD');
             $this->fail('Empty string should be invalid');
         } catch (ParsingException $e) {
-            $this->assertContains("Parse error on line 1:\nA...\n^", $e->getMessage());
+            $this->assertStringContainsString("Parse error on line 1:\nA...\n^", $e->getMessage());
         }
     }
 
@@ -204,7 +204,7 @@ bar"}');
             $parser->parse('{"a":"b", "a":"c"}', JsonParser::DETECT_KEY_CONFLICTS);
             $this->fail('Duplicate keys should not be allowed');
         } catch (DuplicateKeyException $e) {
-            $this->assertContains('Duplicate key: a', $e->getMessage());
+            $this->assertStringContainsString('Duplicate key: a', $e->getMessage());
             $this->assertSame('a', $e->getKey());
             $this->assertSame(array('line' => 1, 'key' => 'a'), $e->getDetails());
         }
@@ -221,7 +221,7 @@ bar"}');
             $parser->parse('{"":"b", "_empty_":"a"}', JsonParser::DETECT_KEY_CONFLICTS);
             $this->fail('Duplicate keys should not be allowed');
         } catch (DuplicateKeyException $e) {
-            $this->assertContains('Duplicate key: _empty_', $e->getMessage());
+            $this->assertStringContainsString('Duplicate key: _empty_', $e->getMessage());
             $this->assertSame('_empty_', $e->getKey());
             $this->assertSame(array('line' => 1, 'key' => '_empty_'), $e->getDetails());
         }
@@ -293,7 +293,7 @@ bar"}');
             $parser->parse((string) file_get_contents(dirname(__FILE__) .'/bom.json'));
             $this->fail('BOM should be detected');
         } catch (ParsingException $e) {
-            $this->assertContains('BOM detected', $e->getMessage());
+            $this->assertStringContainsString('BOM detected', $e->getMessage());
         }
     }
 
@@ -312,7 +312,7 @@ bar"}');
         try {
             $this->assertEquals('', $parser->parse('{"'));
         } catch (ParsingException $e) {
-            $this->assertContains('Invalid string, it appears you forgot to terminate a string', $e->getMessage());
+            $this->assertStringContainsString('Invalid string, it appears you forgot to terminate a string', $e->getMessage());
         }
     }
 
