@@ -30,10 +30,7 @@ use Seld\JsonLint\JsonParser;
 $files = array();
 $quiet = false;
 $allowComments = false;
-$allowDuplicateKeys = false; // Not really useful for the command-line linting
-$allowDuplicateKeysToArray = false; // Not really useful for the command-line linting
 $detectKeyConflicts = false;
-$parseToAssoc = false; // Not really useful for the command-line linting
 $validateUTF8Encoding = false;
 
 if (isset($_SERVER['argc']) && $_SERVER['argc'] > 1) {
@@ -43,14 +40,8 @@ if (isset($_SERVER['argc']) && $_SERVER['argc'] > 1) {
             $quiet = true;
         } elseif ($arg === '--allow-comments') {
             $allowComments = true;
-        } elseif ($arg === '--allow-duplicate-keys') {
-            $allowDuplicateKeys = true;
-        } elseif ($arg === '--allow-duplicate-keys-to-array') {
-            $allowDuplicateKeysToArray = true;
         } elseif ($arg === '--detect-key-conflicts') {
             $detectKeyConflicts = true;
-        } elseif ($arg === '--parse-to-assoc') {
-            $parseToAssoc = true;
         } elseif ($arg === '--validate-utf8-encoding') {
             $validateUTF8Encoding = true;
         } else {
@@ -65,10 +56,7 @@ if (isset($_SERVER['argc']) && $_SERVER['argc'] > 1) {
 
 $flags = getFlags(
   $allowComments,
-  $allowDuplicateKeys,
-  $allowDuplicateKeysToArray,
   $detectKeyConflicts,
-  $parseToAssoc,
   $validateUTF8Encoding,
 );
 
@@ -94,18 +82,12 @@ if (!empty($files)) {
 
 function getFlags(
     $allowComments = false,
-    $allowDuplicateKeys = false,
-    $allowDuplicateKeysToArray = false,
     $detectKeyConflicts = false,
-    $parseToAssoc = false,
     $validateUTF8Encoding = false,
 ){
     $flags = 0;
     if($allowComments){ $flags |= JsonParser::ALLOW_COMMENTS; }
-    if($allowDuplicateKeys){ $flags |= JsonParser::ALLOW_DUPLICATE_KEYS; }
-    if($allowDuplicateKeysToArray){ $flags |= JsonParser::ALLOW_DUPLICATE_KEYS_TO_ARRAY; }
     if($detectKeyConflicts){ $flags |= JsonParser::DETECT_KEY_CONFLICTS; }
-    if($parseToAssoc){ $flags |= JsonParser::PARSE_TO_ASSOC; }
     // TODO if($validateUTF8Encoding){ $flags |= JsonParser::VALIDATE_UTF8_ENCODING; }
     return $flags;
 }
@@ -159,14 +141,7 @@ function showUsage($programPath)
     echo '  -q, --quiet     Cause jsonlint to be quiet when no errors are found'.PHP_EOL;
     echo '  -h, --help      Show this message'.PHP_EOL;
     echo '  --allow-comments Cause jsonlint to enable syntax for comments similar to JSON5.'.PHP_EOL;
-    echo '  --allow-duplicate-keys Cause value V of duplicate key K to be stored under the key K suffixed with duplication count.'.PHP_EOL;
-    echo '  --allow-duplicate-keys-to-array Cause value V of duplicate key K of object Ob to be stored:'.PHP_EOL;
-    echo '                                   - if --parse-to-assoc is set, Ob[K] becomes a subarray and V is stored in Ob[K][__duplicates__];'.PHP_EOL;
-    echo '                                   - if --parse-to-assoc is unset, Ob[K] becomes an object and V is stored in Ob->K->__duplicates__.'.PHP_EOL;
     echo '  --detect-key-conflicts Cause jsonlint to detect key conflicts in objects.'.PHP_EOL;
-    echo '                         When activated, --allow-duplicate-keys and --allow-duplicate-keys-to-arrays are ignored.'.PHP_EOL;
-    echo '                         When none of --detect-key-conflicts, --allow-duplicate-keys and --allow-duplicate-keys-to-arrays are set, then the last value with the same key is kept by overwriting mechanism.'.PHP_EOL;
-    echo '  --parse-to-assoc Cause jsonlint to store data from JSON objects in a PHP associative array instead of a PHP object.'.PHP_EOL;
     // TODO echo '  --validate-utf8-encoding Cause jsonlint to validate that the whole file is valid UTF-8 encoding.'.PHP_EOL;
     exit(0);
 }
