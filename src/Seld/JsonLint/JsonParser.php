@@ -185,13 +185,6 @@ class JsonParser
      */
     public function lint($input, $flags = 0)
     {
-        if ($flags & self::VALIDATE_UTF8_ENCODING) {
-            try {
-                $this->validateUTF8Encoding($input);
-            } catch (InvalidEncodingException $e) {
-                return $e;
-            }
-        }
         try {
             $this->parse($input, $flags);
         } catch (ParsingException $e) {
@@ -212,6 +205,9 @@ class JsonParser
     {
         if (($flags & self::ALLOW_DUPLICATE_KEYS_TO_ARRAY) && ($flags & self::ALLOW_DUPLICATE_KEYS)) {
             throw new \InvalidArgumentException('Only one of ALLOW_DUPLICATE_KEYS and ALLOW_DUPLICATE_KEYS_TO_ARRAY can be used, you passed in both.');
+        }
+        if ($flags & self::VALIDATE_UTF8_ENCODING) {
+            $this->validateUTF8Encoding($input);
         }
 
         $this->failOnBOM($input);
