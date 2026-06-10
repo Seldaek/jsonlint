@@ -286,6 +286,33 @@ bar"}');
         $this->assertSame(json_decode($json, true), $result);
     }
 
+    public function testFileValidUTF8()
+    {
+        try {
+            $parser = new JsonParser();
+            $parser->parse
+                ((string) file_get_contents(dirname(__FILE__) .'/validutf8.json'),
+                JsonParser::VALIDATE_UTF8_ENCODING
+            );
+        } catch (ParsingException $e) {
+            $this->fail('validutf8.json file should pass validation.');
+        }
+    }
+
+    public function testFileNonValidUTF8()
+    {
+        try {
+            $parser = new JsonParser();
+            $parser->parse
+                ((string) file_get_contents(dirname(__FILE__) .'/nonvalidutf8.json'),
+                JsonParser::VALIDATE_UTF8_ENCODING
+            );
+            $this->fail('nonvalidutf8.json file should not pass validation.');
+        } catch (ParsingException $e) {
+            $this->assertContains('Non-UTF8 character found', $e->getMessage());
+        }
+    }
+
     public function testFileWithBOM()
     {
         try {
