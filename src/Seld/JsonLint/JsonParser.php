@@ -616,14 +616,19 @@ class JsonParser
      */
     private function validateUTF8Encoding($input)
     {
+        $iCurrentOctet = null;
         $iContinuationOctetNeeded = 0;
-        $iCharacterStartPosition = 0;
+        $iOffsetInOctetsFromStringStart = 0;
+        $iOffsetInCharactersFromStringStart = -1;
+        $iCharacterStartPositionFromStringStart = 0;
         $iCurrentLineNumber = 1;
         $iOffsetInOctetsFromLineStart = -1;
         $iOffsetInCharactersFromLineStart = -1;
+        $iCharacterStartPositionFromLineStart = -1;
         for ($i = 0, $iMax = strlen($input); $i < $iMax; ++$i) {
             $iCurrentOctet = ord($input[$i]);
-            $iOffsetInOctetsFromLineStart += 1;
+            $iOffsetInOctetsFromStringStart = $i;
+            ++$iOffsetInOctetsFromLineStart;
             if ($iContinuationOctetNeeded > 0) {
                 if ($iCurrentOctet < 128 || $iCurrentOctet >= 192) {
                     throw new InvalidEncodingException(
@@ -636,20 +641,29 @@ class JsonParser
                         .", has value "
                         .$iCurrentOctet
                         ." which is not a continuation octet."
-                        ." (Sequential positions in octets without line splitting:"
-                        ." character start position "
-                        .$iCharacterStartPosition
-                        .", octet position "
-                        .$i
-                        .")",
+                        ." This character starts at octet "
+                        .($iCharacterStartPositionFromLineStart + 1)
+                        ." of the current line."
+                        ." (Sequential positions without line splitting:"
+                        ." This is at character "
+                        .($iOffsetInCharactersFromStringStart + 1)
+                        ." and octet "
+                        .($iOffsetInOctetsFromStringStart + 1)
+                        ."."
+                        ." This character starts at octet "
+                        .($iCharacterStartPositionFromStringStart + 1)
+                        .".)",
                         (string) $iCurrentOctet,
                         array(
-                           'line' => $iCurrentLineNumber,
-                           'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
-                           'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
-                           'octet_position' => $i,
-                           'character_start_position' => $iCharacterStartPosition,
-                       )
+                            'line' => $iCurrentLineNumber,
+                            'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
+                            'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
+                            'character_start_position_from_line_start' => $iCharacterStartPositionFromLineStart,
+                            'current_octet' => $iCurrentOctet,
+                            'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
+                            'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
+                            'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
+                        )
                     );
                 }
                 --$iContinuationOctetNeeded;
@@ -677,19 +691,28 @@ class JsonParser
                     .", has value "
                     .$iCurrentOctet
                     ." which is a continuation octet."
-                    ." (Sequential positions in octets without line splitting:"
-                    ." character start position "
-                    .$iCharacterStartPosition
-                    .", octet position "
-                    .$i
-                    .")",
+                    ." This character starts at octet "
+                    .($iCharacterStartPositionFromLineStart + 1)
+                    ." of the current line."
+                    ." (Sequential positions without line splitting:"
+                    ." This is at character "
+                    .($iOffsetInCharactersFromStringStart + 1)
+                    ." and octet "
+                    .($iOffsetInOctetsFromStringStart + 1)
+                    ."."
+                    ." This character starts at octet "
+                    .($iCharacterStartPositionFromStringStart + 1)
+                    .".)",
                     (string) $iCurrentOctet,
                     array(
                         'line' => $iCurrentLineNumber,
                         'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
                         'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
-                        'octet_position' => $i,
-                        'character_start_position' => $iCharacterStartPosition,
+                        'character_start_position_from_line_start' => $iCharacterStartPositionFromLineStart,
+                        'current_octet' => $iCurrentOctet,
+                        'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
+                        'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
+                        'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
                     )
                 );
             }
@@ -709,7 +732,7 @@ class JsonParser
                 continue;
             }
             throw new InvalidEncodingException(
-                 "Non-UTF8 character found on line "
+                "Non-UTF8 character found on line "
                 .$iCurrentLineNumber
                 ."; the octet "
                 .($iOffsetInOctetsFromLineStart + 1)
@@ -718,19 +741,62 @@ class JsonParser
                 .", has value "
                 .$iCurrentOctet
                 ." which is invalid."
-                ." (Sequential positions in octets without line splitting:"
-                ." character start position "
-                .$iCharacterStartPosition
-                .", octet position "
-                .$i
-                .")",
-                (string)$iCurrentOctet,
+                ." This character starts at octet "
+                .($iCharacterStartPositionFromLineStart + 1)
+                ." of the current line."
+                ." (Sequential positions without line splitting:"
+                ." This is at character "
+                .($iOffsetInCharactersFromStringStart + 1)
+                ." and octet "
+                .($iOffsetInOctetsFromStringStart + 1)
+                ."."
+                ." This character starts at octet "
+                .($iCharacterStartPositionFromStringStart + 1)
+                .".)",
+                (string) $iCurrentOctet,
                 array(
                     'line' => $iCurrentLineNumber,
                     'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
                     'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
-                    'octet_position' => $i,
-                    'character_start_position' => $iCharacterStartPosition,
+                    'character_start_position_from_line_start' => $iCharacterStartPositionFromLineStart,
+                    'current_octet' => $iCurrentOctet,
+                    'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
+                    'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
+                    'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
+                )
+            );
+        }
+        if ($iContinuationOctetNeeded > 0) {
+            throw new InvalidEncodingException(
+                 "Non-UTF8 character found on line "
+                .$iCurrentLineNumber
+                ."; at octet "
+                .($iOffsetInOctetsFromLineStart + 1)
+                .", part of the character "
+                .($iOffsetInCharactersFromLineStart + 1)
+                .", end of string was found instead of a continuation octet."
+                ." This character starts at octet "
+                .($iCharacterStartPositionFromLineStart + 1)
+                ." of the current line."
+                ." (Sequential positions without line splitting:"
+                ." This is at character "
+                .($iOffsetInCharactersFromStringStart + 1)
+                ." and octet "
+                .($iOffsetInOctetsFromStringStart + 1)
+                ."."
+                ." This character starts at octet "
+                .($iCharacterStartPositionFromStringStart + 1)
+                .".)",
+                "0",
+                array(
+                    'line' => $iCurrentLineNumber,
+                    'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
+                    'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
+                    'character_start_position_from_line_start' => $iCharacterStartPositionFromLineStart,
+                    'current_octet' => $iCurrentOctet,
+                    'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
+                    'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
+                    'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
                 )
             );
         }
