@@ -640,6 +640,49 @@ class JsonParser
             $iCurrentOctet = ord($input[$i]);
             $iOffsetInOctetsFromStringStart = $i;
             ++$iOffsetInOctetsFromLineStart;
+
+            if (
+                $iCurrentOctet === 192
+                || $iCurrentOctet === 193
+                || $iCurrentOctet === 245
+                || $iCurrentOctet === 255
+            ) {
+                throw new InvalidEncodingException(
+                    "Non-UTF8 character found on line "
+                    .$iCurrentLineNumber
+                    ."; the octet "
+                    .($iOffsetInOctetsFromLineStart + 1)
+                    .", part of the character "
+                    .($iOffsetInCharactersFromLineStart + 1)
+                    .", has value "
+                    .$iCurrentOctet
+                    ." which is one of the four forbidden values (C0, C1, F5, FF)."
+                    ." This character starts at octet "
+                    .($iCharacterStartPositionFromLineStart + 1)
+                    ." of the current line."
+                    ." (Sequential positions without line splitting:"
+                    ." This is at character "
+                    .($iOffsetInCharactersFromStringStart + 1)
+                    ." and octet "
+                    .($iOffsetInOctetsFromStringStart + 1)
+                    ."."
+                    ." This character starts at octet "
+                    .($iCharacterStartPositionFromStringStart + 1)
+                    .".)",
+                    (string) $iCurrentOctet,
+                    array(
+                        'line' => $iCurrentLineNumber,
+                        'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
+                        'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
+                        'character_start_position_from_line_start' => $iCharacterStartPositionFromLineStart,
+                        'current_octet' => $iCurrentOctet,
+                        'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
+                        'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
+                        'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
+                    )
+                );
+            }
+
             if ($iContinuationOctetNeeded > 0) {
                 if ($iCurrentOctet < 128 || $iCurrentOctet >= 192) {
                     throw new InvalidEncodingException(
@@ -691,6 +734,7 @@ class JsonParser
                 }
                 continue;
             }
+
             if (/*$iCurrentOctet >= 128 &&*/$iCurrentOctet < 192) {
                 throw new InvalidEncodingException(
                     "Non-UTF8 character found on line "
