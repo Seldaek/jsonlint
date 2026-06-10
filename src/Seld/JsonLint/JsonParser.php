@@ -636,11 +636,26 @@ class JsonParser
         $iOffsetInOctetsFromLineStart = -1;
         $iOffsetInCharactersFromLineStart = -1;
         $iCharacterStartPositionFromLineStart = -1;
+
+        // For the second octet of a character, hence first continuation octet,
+        // further restriction may apply.
+        $I_CONTINUATION_OCTET_MINIMUM = 128;
+        $I_CONTINUATION_OCTET_MAXIMUM = 191;
+        $iCurrentContinuationOctetMinimum = $I_CONTINUATION_OCTET_MINIMUM;
+        $iCurrentContinuationOctetMaximum = $I_CONTINUATION_OCTET_MAXIMUM;
+
         for ($i = 0, $iMax = strlen($input); $i < $iMax; ++$i) {
             $iCurrentOctet = ord($input[$i]);
             $iOffsetInOctetsFromStringStart = $i;
             ++$iOffsetInOctetsFromLineStart;
 
+            /*
+            The octet values C0, C1, F5 to FF never appear.
+            C0 = 12*16      = 192 = 11000000
+            C1 = 12*16 + 1  = 193 = 11000001
+            F5 = 15*16 + 5  = 245 = 11110101
+            FF = 15*16 + 15 = 255 = 11111111
+            */
             if (
                 $iCurrentOctet === 192
                 || $iCurrentOctet === 193
@@ -671,20 +686,42 @@ class JsonParser
                     .".)",
                     (string) $iCurrentOctet,
                     array(
+                        'current_octet' => $iCurrentOctet,
+                        'continuation_octet_needed' => $iContinuationOctetNeeded,
+                        'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
+                        'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
+                        'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
                         'line' => $iCurrentLineNumber,
                         'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
                         'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
                         'character_start_position_from_line_start' => $iCharacterStartPositionFromLineStart,
-                        'current_octet' => $iCurrentOctet,
-                        'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
-                        'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
-                        'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
+                        'current_continuation_octet_minimum' => $iCurrentContinuationOctetMinimum,
+                        'current_continuation_octet_maximum' => $iCurrentContinuationOctetMaximum,
                     )
                 );
             }
 
+            /*
+            UTF8-octets = *( UTF8-char )
+            UTF8-char   = UTF8-1 / UTF8-2 / UTF8-3 / UTF8-4
+            UTF8-1      = %x00-7F
+            UTF8-2      = %xC2-DF UTF8-tail
+              Notice that values C0 and C1 are forbidden, hence %xC2
+            UTF8-3      = %xE0 %xA0-BF UTF8-tail / %xE1-EC 2( UTF8-tail ) /
+                          %xED %x80-9F UTF8-tail / %xEE-EF 2( UTF8-tail )
+              Notice that E0 = 224 adds a restriction on second octet.
+              Notice that ED = 237 adds a restriction on second octet.
+            UTF8-4      = %xF0 %x90-BF 2( UTF8-tail ) / %xF1-F3 3( UTF8-tail ) /
+                          %xF4 %x80-8F 2( UTF8-tail )
+              Notice that F0 = 240 adds a restriction on second octet.
+              Notice that F4 = 244 adds a restriction on second octet.
+            UTF8-tail   = %x80-BF
+            */
             if ($iContinuationOctetNeeded > 0) {
-                if ($iCurrentOctet < 128 || $iCurrentOctet >= 192) {
+                if(
+                    $iCurrentOctet < $iCurrentContinuationOctetMinimum
+                    || $iCurrentOctet > $iCurrentContinuationOctetMaximum
+                ){
                     throw new InvalidEncodingException(
                         "Non-UTF8 character found on line "
                         .$iCurrentLineNumber
@@ -709,26 +746,35 @@ class JsonParser
                         .".)",
                         (string) $iCurrentOctet,
                         array(
+                            'current_octet' => $iCurrentOctet,
+                            'continuation_octet_needed' => $iContinuationOctetNeeded,
+                            'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
+                            'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
+                            'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
                             'line' => $iCurrentLineNumber,
                             'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
                             'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
                             'character_start_position_from_line_start' => $iCharacterStartPositionFromLineStart,
-                            'current_octet' => $iCurrentOctet,
-                            'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
-                            'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
-                            'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
+                            'current_continuation_octet_minimum' => $iCurrentContinuationOctetMinimum,
+                            'current_continuation_octet_maximum' => $iCurrentContinuationOctetMaximum,
                         )
                     );
                 }
                 --$iContinuationOctetNeeded;
+                $iCurrentContinuationOctetMinimum = $I_CONTINUATION_OCTET_MINIMUM;
+                $iCurrentContinuationOctetMaximum = $I_CONTINUATION_OCTET_MAXIMUM;
                 continue;
             }
 
-            $iCharacterStartPosition = $i;
-            $iOffsetInCharactersFromLineStart += 1;
+            ++$iOffsetInCharactersFromStringStart;
+            ++$iOffsetInCharactersFromLineStart;
+            $iCharacterStartPositionFromStringStart = $iOffsetInOctetsFromStringStart;
+            $iCharacterStartPositionFromLineStart = $iOffsetInOctetsFromLineStart;
+
             if ($iCurrentOctet < 128) { // 0xxxxxxx ASCII
-                if ($input[$i] === "\n") {
-                    $iCurrentLineNumber += 1;
+                // if ($input[$i] === "\n") {
+                if ($iCurrentOctet === 10) {
+                    ++$iCurrentLineNumber;
                     $iOffsetInOctetsFromLineStart = -1;
                     $iOffsetInCharactersFromLineStart = -1;
                 }
@@ -760,17 +806,67 @@ class JsonParser
                     .".)",
                     (string) $iCurrentOctet,
                     array(
+                        'current_octet' => $iCurrentOctet,
+                        'continuation_octet_needed' => $iContinuationOctetNeeded,
+                        'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
+                        'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
+                        'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
                         'line' => $iCurrentLineNumber,
                         'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
                         'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
                         'character_start_position_from_line_start' => $iCharacterStartPositionFromLineStart,
-                        'current_octet' => $iCurrentOctet,
-                        'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
-                        'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
-                        'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
+                        'current_continuation_octet_minimum' => $iCurrentContinuationOctetMinimum,
+                        'current_continuation_octet_maximum' => $iCurrentContinuationOctetMaximum,
                     )
                 );
             }
+
+            /*
+            The definition of UTF-8 prohibits encoding character numbers between
+            U+D800 and U+DFFF.
+            D8 = 13*16 + 8  = 216 = 11010100
+            DF = 13*16 + 15 = 223 = 11010101
+            */
+            if ($iCurrentOctet >= 216 && $iCurrentOctet <= 223) {
+                throw new InvalidEncodingException(
+                    "Non-UTF8 character found on line "
+                    .$iCurrentLineNumber
+                    ."; the octet "
+                    .($iOffsetInOctetsFromLineStart + 1)
+                    .", part of the character "
+                    .($iOffsetInCharactersFromLineStart + 1)
+                    .", has value "
+                    .$iCurrentOctet
+                    ." which is into a forbidden range of values for first octet of character."
+                    ." This character starts at octet "
+                    .($iCharacterStartPositionFromLineStart + 1)
+                    ." of the current line."
+                    ." (Sequential positions without line splitting:"
+                    ." This is at character "
+                    .($iOffsetInCharactersFromStringStart + 1)
+                    ." and octet "
+                    .($iOffsetInOctetsFromStringStart + 1)
+                    ."."
+                    ." This character starts at octet "
+                    .($iCharacterStartPositionFromStringStart + 1)
+                    .".)",
+                    (string) $iCurrentOctet,
+                    array(
+                        'current_octet' => $iCurrentOctet,
+                        'continuation_octet_needed' => $iContinuationOctetNeeded,
+                        'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
+                        'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
+                        'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
+                        'line' => $iCurrentLineNumber,
+                        'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
+                        'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
+                        'character_start_position_from_line_start' => $iCharacterStartPositionFromLineStart,
+                        'current_continuation_octet_minimum' => $iCurrentContinuationOctetMinimum,
+                        'current_continuation_octet_maximum' => $iCurrentContinuationOctetMaximum,
+                    )
+                );
+            }
+
             if (/*$iCurrentOctet >= 192 &&*/$iCurrentOctet < 224) {
                 // 110xxxxx 10xxxxxx
                 $iContinuationOctetNeeded = 1;
@@ -779,11 +875,39 @@ class JsonParser
             if (/*$iCurrentOctet >= 224 &&*/$iCurrentOctet < 240) {
                 // 1110xxxx 10xxxxxx 10xxxxxx
                 $iContinuationOctetNeeded = 2;
+                /*
+                UTF8-3 = %xE0 %xA0-BF UTF8-tail / %xE1-EC 2( UTF8-tail ) /
+                         %xED %x80-9F UTF8-tail / %xEE-EF 2( UTF8-tail )
+                Notice that E0 = 224 adds a restriction on second octet.
+                Notice that ED = 237 adds a restriction on second octet.
+                */
+                if($iCurrentOctet === 224){
+                    $iCurrentContinuationOctetMinimum = 160;
+                    $iCurrentContinuationOctetMaximum = 191;  // Normal value
+                }
+                if($iCurrentOctet === 237){
+                    $iCurrentContinuationOctetMinimum = 128;  // Normal value
+                    $iCurrentContinuationOctetMaximum = 159;
+                }
                 continue;
             }
             if (/*$iCurrentOctet >= 240 &&*/$iCurrentOctet < 248) {
                 // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
                 $iContinuationOctetNeeded = 3;
+                /*
+                UTF8-4 = %xF0 %x90-BF 2( UTF8-tail ) / %xF1-F3 3( UTF8-tail ) /
+                         %xF4 %x80-8F 2( UTF8-tail )
+                Notice that F0 = 240 adds a restriction on second octet.
+                Notice that F4 = 244 adds a restriction on second octet.
+                */
+                if($iCurrentOctet === 240){
+                  $iCurrentContinuationOctetMinimum = 144;
+                  $iCurrentContinuationOctetMaximum = 191;  // Normal value
+                }
+                if($iCurrentOctet === 244){
+                  $iCurrentContinuationOctetMinimum = 128;  // Normal value
+                  $iCurrentContinuationOctetMaximum = 143;
+                }
                 continue;
             }
             throw new InvalidEncodingException(
@@ -810,20 +934,23 @@ class JsonParser
                 .".)",
                 (string) $iCurrentOctet,
                 array(
+                    'current_octet' => $iCurrentOctet,
+                    'continuation_octet_needed' => $iContinuationOctetNeeded,
+                    'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
+                    'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
+                    'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
                     'line' => $iCurrentLineNumber,
                     'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
                     'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
                     'character_start_position_from_line_start' => $iCharacterStartPositionFromLineStart,
-                    'current_octet' => $iCurrentOctet,
-                    'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
-                    'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
-                    'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
+                    'current_continuation_octet_minimum' => $iCurrentContinuationOctetMinimum,
+                    'current_continuation_octet_maximum' => $iCurrentContinuationOctetMaximum,
                 )
             );
         }
         if ($iContinuationOctetNeeded > 0) {
             throw new InvalidEncodingException(
-                 "Non-UTF8 character found on line "
+                "Non-UTF8 character found on line "
                 .$iCurrentLineNumber
                 ."; at octet "
                 .($iOffsetInOctetsFromLineStart + 1)
@@ -844,14 +971,17 @@ class JsonParser
                 .".)",
                 "0",
                 array(
+                    'current_octet' => $iCurrentOctet,
+                    'continuation_octet_needed' => $iContinuationOctetNeeded,
+                    'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
+                    'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
+                    'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
                     'line' => $iCurrentLineNumber,
                     'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
                     'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
                     'character_start_position_from_line_start' => $iCharacterStartPositionFromLineStart,
-                    'current_octet' => $iCurrentOctet,
-                    'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
-                    'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
-                    'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
+                    'current_continuation_octet_minimum' => $iCurrentContinuationOctetMinimum,
+                    'current_continuation_octet_maximum' => $iCurrentContinuationOctetMaximum,
                 )
             );
         }
