@@ -88,7 +88,7 @@ function getFlags(
     $flags = 0;
     if($allowComments){ $flags |= JsonParser::ALLOW_COMMENTS; }
     if($detectKeyConflicts){ $flags |= JsonParser::DETECT_KEY_CONFLICTS; }
-    // TODO if($validateUTF8Encoding){ $flags |= JsonParser::VALIDATE_UTF8_ENCODING; }
+    if($validateUTF8Encoding){ $flags |= JsonParser::VALIDATE_UTF8_ENCODING; }
     return $flags;
 }
 
@@ -142,6 +142,6 @@ function showUsage($programPath)
     echo '  -h, --help      Show this message'.PHP_EOL;
     echo '  --allow-comments Cause jsonlint to enable syntax for comments similar to JSON5.'.PHP_EOL;
     echo '  --detect-key-conflicts Cause jsonlint to detect key conflicts in objects.'.PHP_EOL;
-    // TODO echo '  --validate-utf8-encoding Cause jsonlint to validate that the whole file is valid UTF-8 encoding.'.PHP_EOL;
+    echo '  --validate-utf8-encoding Cause jsonlint to validate that the whole file is valid UTF-8 encoding.'.PHP_EOL;
     exit(0);
 }
