@@ -616,6 +616,17 @@ class JsonParser
      */
     private function validateUTF8Encoding($input)
     {
+        //Fast-path
+        if (function_exists("mb_check_encoding")) {
+            if(mb_check_encoding($input, 'UTF-8')){
+                return;
+            }
+        } else {
+            if (preg_match('//u', $input) === 1) {
+                return;
+            }
+        }
+
         $iCurrentOctet = null;
         $iContinuationOctetNeeded = 0;
         $iOffsetInOctetsFromStringStart = 0;
