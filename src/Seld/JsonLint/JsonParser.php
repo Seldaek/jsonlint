@@ -891,7 +891,7 @@ class JsonParser
                 }
                 continue;
             }
-            if (/*$iCurrentOctet >= 240 &&*/$iCurrentOctet < 248) {
+            if (/*$iCurrentOctet >= 240 &&*/$iCurrentOctet < /*248*/ 245) {
                 // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
                 $iContinuationOctetNeeded = 3;
                 /*
