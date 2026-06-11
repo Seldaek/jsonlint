@@ -33,17 +33,33 @@ class Utf8Validator
     const CONTINUATION_OCTET_MAXIMUM = 191;
 
     /**
+     * Checks that the version of PHP allows using the fast-path.
+     *
+     * @return bool
+     */
+    public static function getUseFastPath()
+    {
+        // Before PHP 5.4, Unicode support has bugs.
+        return PHP_VERSION_ID >= 50400;
+    }
+
+    /**
      * Validates that the whole input string is valid UTF-8.
      *
      * @param  string $input
+     * @param  bool $useFastPath
      * @return void
      * @throws InvalidEncodingException if the input is not valid UTF-8
      */
-    public static function validate($input)
+    public static function validate($input, $useFastPath = true)
     {
         // Fast-path
-        // But before PHP 5.4 Unicode support has bugs.
-        if (PHP_VERSION_ID >= 50400) {
+        if ($useFastPath && !Utf8Validator::getUseFastPath()) {
+            throw new \Exception(
+                'Fast-path is not available with version '.PHP_VERSION_ID.' of PHP.'
+            );
+        }
+        if ($useFastPath) {
             if (function_exists("mb_check_encoding")) {
                 if (mb_check_encoding($input, 'UTF-8')) {
                     return;
@@ -292,6 +308,28 @@ class Utf8Validator
                     'current_continuation_octet_maximum' => $currentContinuationOctetMaximum,
                 ),
                 true
+            );
+        }
+        if ($useFastPath) {
+            throw new InvalidEncodingException(
+                "Fast-path detected an error that this function couldn't found."
+                .'Please create an issue at '
+                .'"https://github.com/Seldaek/jsonlint/issues" and if possible at'
+                .'"https://github.com/LLyaudet/DevOrSysAdminScripts/issues".',
+                "0",
+                array(
+                    'current_octet' => $currentOctet,
+                    'continuation_octet_needed' => $continuationOctetNeeded,
+                    'offset_in_octets_from_string_start' => $offsetInOctetsFromStringStart,
+                    'offset_in_characters_from_string_start' => $offsetInCharactersFromStringStart,
+                    'character_start_position_from_string_start' => $characterStartPositionFromStringStart,
+                    'line' => $currentLineNumber,
+                    'offset_in_octets_from_line_start' => $offsetInOctetsFromLineStart,
+                    'offset_in_characters_from_line_start' => $offsetInCharactersFromLineStart,
+                    'character_start_position_from_line_start' => $characterStartPositionFromLineStart,
+                    'current_continuation_octet_minimum' => $currentContinuationOctetMinimum,
+                    'current_continuation_octet_maximum' => $currentContinuationOctetMaximum,
+                )
             );
         }
     }

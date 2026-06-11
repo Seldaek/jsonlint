@@ -208,7 +208,7 @@ class JsonParser
             throw new \InvalidArgumentException('Only one of ALLOW_DUPLICATE_KEYS and ALLOW_DUPLICATE_KEYS_TO_ARRAY can be used, you passed in both.');
         }
         if ($flags & self::VALIDATE_UTF8_ENCODING) {
-            Utf8Validator::validate($input);
+            Utf8Validator::validate($input, Utf8Validator::getUseFastPath());
         }
 
         $this->failOnBOM($input);
