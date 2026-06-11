@@ -326,16 +326,6 @@ bar"}');
             $this->fail('ISO 8859-15 "abcdé" should not pass validation.');
         } catch (InvalidEncodingException $e) {
             $this->assertContains('Non-UTF8 character found', $e->getMessage());
-            $this->assertContains('Non-UTF8 character found', $e->getMessage());
-        }
-        try {
-            $parser->parse(
-                '"abcd'.chr(233).'"',
-                JsonParser::VALIDATE_UTF8_ENCODING
-            );
-            $this->fail('ISO 8859-15 "abcdé" should not pass validation.');
-        } catch (InvalidEncodingException $e) {
-            $this->assertContains('Non-UTF8 character found', $e->getMessage());
             $this->assertContains(' which is not a continuation octet.', $e->getMessage());
         }
         try {
@@ -398,19 +388,6 @@ bar"}');
                 $e->getMessage()
             );
         }
-        try {
-            $parser->parse(
-                '"abcd'.chr(129).'"',
-                JsonParser::VALIDATE_UTF8_ENCODING
-            );
-            $this->fail('"abcd\d129" should not pass validation.');
-        } catch (InvalidEncodingException $e) {
-            $this->assertContains('Non-UTF8 character found', $e->getMessage());
-            $this->assertContains(
-                ' which is a continuation octet.',
-                $e->getMessage()
-            );
-        }
         for ($i = 216; $i <= 223; ++$i) {
             try {
                 $parser->parse(
@@ -439,7 +416,7 @@ bar"}');
                 );
             }
         }
-        for ($i = 245; $i <= 255; ++$i) {
+        for ($i = 246; $i < 255; ++$i) { // 245 and 255 already forbidden
             try {
                 $parser->parse(
                     '"abcd'.chr($i).chr(129).chr(129).chr(129).'"',

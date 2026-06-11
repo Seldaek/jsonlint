@@ -617,6 +617,7 @@ class JsonParser
     private function validateUTF8Encoding($input)
     {
         //Fast-path
+        /* Buggy
         if (function_exists("mb_check_encoding")) {
             if(mb_check_encoding($input, 'UTF-8')){
                 return;
@@ -626,6 +627,7 @@ class JsonParser
                 return;
             }
         }
+        */
 
         $iCurrentOctet = null;
         $iContinuationOctetNeeded = 0;
