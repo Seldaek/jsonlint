@@ -54,11 +54,7 @@ if (isset($_SERVER['argc']) && $_SERVER['argc'] > 1) {
     }
 }
 
-$flags = getFlags(
-  $allowComments,
-  $detectKeyConflicts,
-  $validateUTF8Encoding,
-);
+$flags = getFlags($allowComments, $detectKeyConflicts, $validateUTF8Encoding);
 
 if (!empty($files)) {
     // file linting
@@ -80,15 +76,19 @@ if (!empty($files)) {
     }
 }
 
-function getFlags(
-    $allowComments = false,
-    $detectKeyConflicts = false,
-    $validateUTF8Encoding = false,
-){
+function getFlags($allowComments = false, $detectKeyConflicts = false, $validateUTF8Encoding = false)
+{
     $flags = 0;
-    if($allowComments){ $flags |= JsonParser::ALLOW_COMMENTS; }
-    if($detectKeyConflicts){ $flags |= JsonParser::DETECT_KEY_CONFLICTS; }
-    if($validateUTF8Encoding){ $flags |= JsonParser::VALIDATE_UTF8_ENCODING; }
+    if ($allowComments) {
+        $flags |= JsonParser::ALLOW_COMMENTS;
+    }
+    if ($detectKeyConflicts) {
+        $flags |= JsonParser::DETECT_KEY_CONFLICTS;
+    }
+    if ($validateUTF8Encoding) {
+        $flags |= JsonParser::VALIDATE_UTF8_ENCODING;
+    }
+
     return $flags;
 }
 
@@ -129,6 +129,7 @@ function lintFile($file, $quiet = false, $flags = 0)
     if (!$quiet) {
         echo 'Valid JSON (' . $file . ')' . PHP_EOL;
     }
+
     return true;
 }
 

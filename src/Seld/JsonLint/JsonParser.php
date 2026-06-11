@@ -10,6 +10,7 @@
  */
 
 namespace Seld\JsonLint;
+
 use stdClass;
 
 /**
@@ -244,7 +245,7 @@ class JsonParser
 
         while (true) {
             // retrieve state number from top of stack
-            $state = $this->stack[\count($this->stack)-1];
+            $state = $this->stack[\count($this->stack) - 1];
 
             // use default actions if available
             if (isset($this->defaultActions[$state])) {
@@ -282,7 +283,7 @@ class JsonParser
                         }
                     }
 
-                    $errStr = 'Parse error on line ' . ($yylineno+1) . ":\n";
+                    $errStr = 'Parse error on line ' . ($yylineno + 1) . ":\n";
                     $errStr .= $this->lexer->showPosition() . "\n";
                     if ($message) {
                         $errStr .= $message;
@@ -328,12 +329,12 @@ class JsonParser
                         throw new ParsingException($errStr ?: 'Parsing halted.');
                     }
                     $this->popStack(1);
-                    $state = $this->stack[\count($this->stack)-1];
+                    $state = $this->stack[\count($this->stack) - 1];
                 }
 
                 $preErrorSymbol = $symbol; // save the lookahead token
                 $symbol = Lexer::T_ERROR;         // insert generic error symbol as new lookahead
-                $state = $this->stack[\count($this->stack)-1];
+                $state = $this->stack[\count($this->stack) - 1];
                 /** @var array<int, int>|false */
                 $action = isset($this->table[$state][Lexer::T_ERROR]) ? $this->table[$state][Lexer::T_ERROR] : false;
                 if ($action === false) {
@@ -395,7 +396,7 @@ class JsonParser
                     $this->vstack[] = $newToken;
                     $this->lstack[] = $position;
                     /** @var int */
-                    $newState = $this->table[$this->stack[\count($this->stack)-2]][$this->stack[\count($this->stack)-1]];
+                    $newState = $this->table[$this->stack[\count($this->stack) - 2]][$this->stack[\count($this->stack) - 1]];
                     $this->stack[] = $newState;
                     break;
 
@@ -620,7 +621,7 @@ class JsonParser
         // But before PHP 5.4 Unicode support has bugs.
         if (PHP_VERSION_ID >= 50400) {
             if (function_exists("mb_check_encoding")) {
-                if(mb_check_encoding($input, 'UTF-8')){
+                if (mb_check_encoding($input, 'UTF-8')) {
                     return;
                 }
             } else {
@@ -722,10 +723,10 @@ class JsonParser
             UTF8-tail   = %x80-BF
             */
             if ($iContinuationOctetNeeded > 0) {
-                if(
+                if (
                     $iCurrentOctet < $iCurrentContinuationOctetMinimum
                     || $iCurrentOctet > $iCurrentContinuationOctetMaximum
-                ){
+                ) {
                     throw new InvalidEncodingException(
                         "Non-UTF8 character found on line "
                         .$iCurrentLineNumber
@@ -736,7 +737,7 @@ class JsonParser
                         .", has value "
                         .$iCurrentOctet
                         .(
-                          $sMessageForContinuationOctetAboveMaximum !== null
+                            $sMessageForContinuationOctetAboveMaximum !== null
                           && $iCurrentOctet > $iCurrentContinuationOctetMaximum
                           ? $sMessageForContinuationOctetAboveMaximum
                           : " which is not a continuation octet."
@@ -862,15 +863,15 @@ class JsonParser
                 is 237 and second octet, first continuation octet,
                 is >= 160.
                 */
-                if($iCurrentOctet === 224){
+                if ($iCurrentOctet === 224) {
                     $iCurrentContinuationOctetMinimum = 160;
                     $iCurrentContinuationOctetMaximum = 191;  // Normal value
                 }
-                if($iCurrentOctet === 237){
+                if ($iCurrentOctet === 237) {
                     $iCurrentContinuationOctetMinimum = 128;  // Normal value
                     $iCurrentContinuationOctetMaximum = 159;
                     $sMessageForContinuationOctetAboveMaximum = (
-                      " which is into the forbidden range of surrogate pairs."
+                        " which is into the forbidden range of surrogate pairs."
                     );
                 }
                 continue;
@@ -884,13 +885,13 @@ class JsonParser
                 Notice that F0 = 240 adds a restriction on second octet.
                 Notice that F4 = 244 adds a restriction on second octet.
                 */
-                if($iCurrentOctet === 240){
-                  $iCurrentContinuationOctetMinimum = 144;
-                  $iCurrentContinuationOctetMaximum = 191;  // Normal value
+                if ($iCurrentOctet === 240) {
+                    $iCurrentContinuationOctetMinimum = 144;
+                    $iCurrentContinuationOctetMaximum = 191;  // Normal value
                 }
-                if($iCurrentOctet === 244){
-                  $iCurrentContinuationOctetMinimum = 128;  // Normal value
-                  $iCurrentContinuationOctetMaximum = 143;
+                if ($iCurrentOctet === 244) {
+                    $iCurrentContinuationOctetMinimum = 128;  // Normal value
+                    $iCurrentContinuationOctetMaximum = 143;
                 }
                 continue;
             }

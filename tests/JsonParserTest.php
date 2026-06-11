@@ -235,7 +235,8 @@ bar"}');
         $str = '{"a":"b", "a":"c", "a":"d"}';
 
         $result = $parser->parse($str, JsonParser::ALLOW_DUPLICATE_KEYS);
-        $this->assertThat($result,
+        $this->assertThat(
+            $result,
             $this->logicalAnd(
                 $this->objectHasAttribute('a'),
                 $this->objectHasAttribute('a.1'),
@@ -270,7 +271,8 @@ bar"}');
             $this->markTestSkipped('Only for PHP < 7.1');
         }
         $result = $parser->parse('{"":"a", "_empty_":"b"}', JsonParser::ALLOW_DUPLICATE_KEYS);
-        $this->assertThat($result,
+        $this->assertThat(
+            $result,
             $this->logicalAnd(
                 $this->objectHasAttribute('_empty_'),
                 $this->objectHasAttribute('_empty_.1')
@@ -465,7 +467,7 @@ bar"}');
     {
         $parser = new JsonParser();
 
-        $json = '{"k":"' . str_repeat("a\\n",10000) . '"}';
+        $json = '{"k":"' . str_repeat("a\\n", 10000) . '"}';
         $this->assertEquals(json_decode($json), $parser->parse($json));
     }
 
