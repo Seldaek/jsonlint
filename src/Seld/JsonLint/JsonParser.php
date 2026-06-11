@@ -667,28 +667,8 @@ class JsonParser
                 || $iCurrentOctet === 245
                 || $iCurrentOctet === 255
             ) {
-                throw new InvalidEncodingException(
-                    "Non-UTF8 character found on line "
-                    .$iCurrentLineNumber
-                    ."; the octet "
-                    .($iOffsetInOctetsFromLineStart + 1)
-                    .", part of the character "
-                    .($iOffsetInCharactersFromLineStart + 1)
-                    .", has value "
-                    .$iCurrentOctet
-                    ." which is one of the four forbidden values (C0, C1, F5, FF)."
-                    ." This character starts at octet "
-                    .($iCharacterStartPositionFromLineStart + 1)
-                    ." of the current line."
-                    ." (Sequential positions without line splitting:"
-                    ." This is at character "
-                    .($iOffsetInCharactersFromStringStart + 1)
-                    ." and octet "
-                    .($iOffsetInOctetsFromStringStart + 1)
-                    ."."
-                    ." This character starts at octet "
-                    .($iCharacterStartPositionFromStringStart + 1)
-                    .".)",
+                throw $this->createUTF8EncodingException(
+                    " which is one of the four forbidden values (C0, C1, F5, FF).",
                     (string) $iCurrentOctet,
                     array(
                         'current_octet' => $iCurrentOctet,
@@ -727,33 +707,13 @@ class JsonParser
                     $iCurrentOctet < $iCurrentContinuationOctetMinimum
                     || $iCurrentOctet > $iCurrentContinuationOctetMaximum
                 ) {
-                    throw new InvalidEncodingException(
-                        "Non-UTF8 character found on line "
-                        .$iCurrentLineNumber
-                        ."; the octet "
-                        .($iOffsetInOctetsFromLineStart + 1)
-                        .", part of the character "
-                        .($iOffsetInCharactersFromLineStart + 1)
-                        .", has value "
-                        .$iCurrentOctet
-                        .(
-                            $sMessageForContinuationOctetAboveMaximum !== null
-                          && $iCurrentOctet > $iCurrentContinuationOctetMaximum
-                          ? $sMessageForContinuationOctetAboveMaximum
-                          : " which is not a continuation octet."
-                        )
-                        ." This character starts at octet "
-                        .($iCharacterStartPositionFromLineStart + 1)
-                        ." of the current line."
-                        ." (Sequential positions without line splitting:"
-                        ." This is at character "
-                        .($iOffsetInCharactersFromStringStart + 1)
-                        ." and octet "
-                        .($iOffsetInOctetsFromStringStart + 1)
-                        ."."
-                        ." This character starts at octet "
-                        .($iCharacterStartPositionFromStringStart + 1)
-                        .".)",
+                    $reason =
+                        $sMessageForContinuationOctetAboveMaximum !== null
+                        && $iCurrentOctet > $iCurrentContinuationOctetMaximum
+                        ? $sMessageForContinuationOctetAboveMaximum
+                        : " which is not a continuation octet.";
+                    throw $this->createUTF8EncodingException(
+                        $reason,
                         (string) $iCurrentOctet,
                         array(
                             'current_octet' => $iCurrentOctet,
@@ -793,28 +753,8 @@ class JsonParser
             }
 
             if (/*$iCurrentOctet >= 128 &&*/$iCurrentOctet < 192) {
-                throw new InvalidEncodingException(
-                    "Non-UTF8 character found on line "
-                    .$iCurrentLineNumber
-                    ."; the octet "
-                    .($iOffsetInOctetsFromLineStart + 1)
-                    .", part of the character "
-                    .($iOffsetInCharactersFromLineStart + 1)
-                    .", has value "
-                    .$iCurrentOctet
-                    ." which is a continuation octet."
-                    ." This character starts at octet "
-                    .($iCharacterStartPositionFromLineStart + 1)
-                    ." of the current line."
-                    ." (Sequential positions without line splitting:"
-                    ." This is at character "
-                    .($iOffsetInCharactersFromStringStart + 1)
-                    ." and octet "
-                    .($iOffsetInOctetsFromStringStart + 1)
-                    ."."
-                    ." This character starts at octet "
-                    .($iCharacterStartPositionFromStringStart + 1)
-                    .".)",
+                throw $this->createUTF8EncodingException(
+                    " which is a continuation octet.",
                     (string) $iCurrentOctet,
                     array(
                         'current_octet' => $iCurrentOctet,
@@ -895,28 +835,8 @@ class JsonParser
                 }
                 continue;
             }
-            throw new InvalidEncodingException(
-                "Non-UTF8 character found on line "
-                .$iCurrentLineNumber
-                ."; the octet "
-                .($iOffsetInOctetsFromLineStart + 1)
-                .", part of the character "
-                .($iOffsetInCharactersFromLineStart + 1)
-                .", has value "
-                .$iCurrentOctet
-                ." which is invalid."
-                ." This character starts at octet "
-                .($iCharacterStartPositionFromLineStart + 1)
-                ." of the current line."
-                ." (Sequential positions without line splitting:"
-                ." This is at character "
-                .($iOffsetInCharactersFromStringStart + 1)
-                ." and octet "
-                .($iOffsetInOctetsFromStringStart + 1)
-                ."."
-                ." This character starts at octet "
-                .($iCharacterStartPositionFromStringStart + 1)
-                .".)",
+            throw $this->createUTF8EncodingException(
+                " which is invalid.",
                 (string) $iCurrentOctet,
                 array(
                     'current_octet' => $iCurrentOctet,
@@ -934,26 +854,8 @@ class JsonParser
             );
         }
         if ($iContinuationOctetNeeded > 0) {
-            throw new InvalidEncodingException(
-                "Non-UTF8 character found on line "
-                .$iCurrentLineNumber
-                ."; at octet "
-                .($iOffsetInOctetsFromLineStart + 1)
-                .", part of the character "
-                .($iOffsetInCharactersFromLineStart + 1)
-                .", end of string was found instead of a continuation octet."
-                ." This character starts at octet "
-                .($iCharacterStartPositionFromLineStart + 1)
-                ." of the current line."
-                ." (Sequential positions without line splitting:"
-                ." This is at character "
-                .($iOffsetInCharactersFromStringStart + 1)
-                ." and octet "
-                .($iOffsetInOctetsFromStringStart + 1)
-                ."."
-                ." This character starts at octet "
-                .($iCharacterStartPositionFromStringStart + 1)
-                .".)",
+            throw $this->createUTF8EncodingException(
+                "",
                 "0",
                 array(
                     'current_octet' => $iCurrentOctet,
@@ -967,8 +869,63 @@ class JsonParser
                     'character_start_position_from_line_start' => $iCharacterStartPositionFromLineStart,
                     'current_continuation_octet_minimum' => $iCurrentContinuationOctetMinimum,
                     'current_continuation_octet_maximum' => $iCurrentContinuationOctetMaximum,
-                )
+                ),
+                true
             );
         }
+    }
+
+    /**
+     * Builds the InvalidEncodingException thrown by validateUTF8Encoding().
+     *
+     * The message scaffold is shared by every detection branch; only the
+     * "$reason" fragment (appended after "has value N") and the end-of-string
+     * wording differ between call sites.
+     *
+     * @param  string $reason     explanation appended after the octet value (ignored when $endOfInput is true)
+     * @param  string $key        the offending octet value, as a string
+     * @param  bool   $endOfInput whether the input ended in the middle of a multi-octet character
+     * @return InvalidEncodingException
+     *
+     * @phpstan-param array{current_octet: int|null, continuation_octet_needed: int, offset_in_octets_from_string_start: int, offset_in_characters_from_string_start: int, character_start_position_from_string_start: int, line: int, offset_in_octets_from_line_start: int, offset_in_characters_from_line_start: int, character_start_position_from_line_start: int, current_continuation_octet_minimum: int, current_continuation_octet_maximum: int} $details
+     */
+    private function createUTF8EncodingException($reason, $key, array $details, $endOfInput = false)
+    {
+        if ($endOfInput) {
+            $middle =
+                "; at octet "
+                .($details['offset_in_octets_from_line_start'] + 1)
+                .", part of the character "
+                .($details['offset_in_characters_from_line_start'] + 1)
+                .", end of string was found instead of a continuation octet.";
+        } else {
+            $middle =
+                "; the octet "
+                .($details['offset_in_octets_from_line_start'] + 1)
+                .", part of the character "
+                .($details['offset_in_characters_from_line_start'] + 1)
+                .", has value "
+                .$details['current_octet']
+                .$reason;
+        }
+
+        $message =
+            "Non-UTF8 character found on line "
+            .$details['line']
+            .$middle
+            ." This character starts at octet "
+            .($details['character_start_position_from_line_start'] + 1)
+            ." of the current line."
+            ." (Sequential positions without line splitting:"
+            ." This is at character "
+            .($details['offset_in_characters_from_string_start'] + 1)
+            ." and octet "
+            .($details['offset_in_octets_from_string_start'] + 1)
+            ."."
+            ." This character starts at octet "
+            .($details['character_start_position_from_string_start'] + 1)
+            .".)";
+
+        return new InvalidEncodingException($message, $key, $details);
     }
 }

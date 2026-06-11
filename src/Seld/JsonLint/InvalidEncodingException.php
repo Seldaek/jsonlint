@@ -17,14 +17,14 @@ namespace Seld\JsonLint;
 class InvalidEncodingException extends ParsingException
 {
     /**
-     * @var array{key: string, line: int}
+     * @var array{key: string, current_octet: int|null, continuation_octet_needed: int, offset_in_octets_from_string_start: int, offset_in_characters_from_string_start: int, character_start_position_from_string_start: int, line: int, offset_in_octets_from_line_start: int, offset_in_characters_from_line_start: int, character_start_position_from_line_start: int, current_continuation_octet_minimum: int, current_continuation_octet_maximum: int}
      */
     protected $details;
 
     /**
      * @param string $message
      * @param string $key
-     * @phpstan-param array{line: int} $details
+     * @phpstan-param array{current_octet: int|null, continuation_octet_needed: int, offset_in_octets_from_string_start: int, offset_in_characters_from_string_start: int, character_start_position_from_string_start: int, line: int, offset_in_octets_from_line_start: int, offset_in_characters_from_line_start: int, character_start_position_from_line_start: int, current_continuation_octet_minimum: int, current_continuation_octet_maximum: int} $details
      */
     public function __construct($message, $key, array $details)
     {
@@ -41,7 +41,7 @@ class InvalidEncodingException extends ParsingException
     }
 
     /**
-     * @phpstan-return array{key: string, line: int}
+     * @phpstan-return array{key: string, current_octet: int|null, continuation_octet_needed: int, offset_in_octets_from_string_start: int, offset_in_characters_from_string_start: int, character_start_position_from_string_start: int, line: int, offset_in_octets_from_line_start: int, offset_in_characters_from_line_start: int, character_start_position_from_line_start: int, current_continuation_octet_minimum: int, current_continuation_octet_maximum: int}
      */
     public function getDetails()
     {
