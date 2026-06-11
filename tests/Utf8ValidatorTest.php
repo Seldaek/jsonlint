@@ -13,6 +13,9 @@ use PHPUnit\Framework\TestCase;
 use Seld\JsonLint\Utf8Validator;
 use Seld\JsonLint\InvalidEncodingException;
 
+/**
+ * @author Laurent Lyaudet <laurent.lyaudet@gmail.com>
+ */
 class Utf8ValidatorTest extends TestCase
 {
     public function testValidUtf8()
