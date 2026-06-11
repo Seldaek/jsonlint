@@ -616,14 +616,17 @@ class JsonParser
      */
     private function validateUTF8Encoding($input)
     {
-        //Fast-path
-        if (function_exists("mb_check_encoding")) {
-            if(mb_check_encoding($input, 'UTF-8')){
-                return;
-            }
-        } else {
-            if (preg_match('//u', $input) === 1) {
-                return;
+        // Fast-path
+        // But before PHP 5.4 Unicode support has bugs.
+        if (PHP_VERSION_ID >= 50400) {
+            if (function_exists("mb_check_encoding")) {
+                if(mb_check_encoding($input, 'UTF-8')){
+                    return;
+                }
+            } else {
+                if (preg_match('//u', $input) === 1) {
+                    return;
+                }
             }
         }
 
