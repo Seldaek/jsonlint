@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
 use Seld\JsonLint\DuplicateKeyException;
+use Seld\JsonLint\InvalidEncodingException;
 
 class JsonParserTest extends TestCase
 {
@@ -290,11 +291,12 @@ bar"}');
     {
         try {
             $parser = new JsonParser();
-            $parser->parse
-                ((string) file_get_contents(dirname(__FILE__) .'/validutf8.json'),
+            $string = $parser->parse(
+                (string) file_get_contents(dirname(__FILE__) .'/validutf8.json'),
                 JsonParser::VALIDATE_UTF8_ENCODING
             );
-        } catch (ParsingException $e) {
+            $this->assertEquals($string, "abcdé");
+        } catch (InvalidEncodingException $e) {
             $this->fail('validutf8.json file should pass validation.');
         }
     }
@@ -303,13 +305,171 @@ bar"}');
     {
         try {
             $parser = new JsonParser();
-            $parser->parse
-                ((string) file_get_contents(dirname(__FILE__) .'/nonvalidutf8.json'),
+            $parser->parse(
+                (string) file_get_contents(dirname(__FILE__) .'/nonvalidutf8.json'),
                 JsonParser::VALIDATE_UTF8_ENCODING
             );
             $this->fail('nonvalidutf8.json file should not pass validation.');
-        } catch (ParsingException $e) {
+        } catch (InvalidEncodingException $e) {
             $this->assertContains('Non-UTF8 character found', $e->getMessage());
+        }
+    }
+
+    public function testAllErrorTypesNonValidUTF8()
+    {
+        $parser = new JsonParser();
+        try {
+            $parser->parse(
+                '"abcd'.chr(233).'"',
+                JsonParser::VALIDATE_UTF8_ENCODING
+            );
+            $this->fail('ISO 8859-15 "abcdé" should not pass validation.');
+        } catch (InvalidEncodingException $e) {
+            $this->assertContains('Non-UTF8 character found', $e->getMessage());
+            $this->assertContains('Non-UTF8 character found', $e->getMessage());
+        }
+        try {
+            $parser->parse(
+                '"abcd'.chr(233).'"',
+                JsonParser::VALIDATE_UTF8_ENCODING
+            );
+            $this->fail('ISO 8859-15 "abcdé" should not pass validation.');
+        } catch (InvalidEncodingException $e) {
+            $this->assertContains('Non-UTF8 character found', $e->getMessage());
+            $this->assertContains(' which is not a continuation octet.', $e->getMessage());
+        }
+        try {
+            $parser->parse(
+                '"abcd'.chr(233),
+                JsonParser::VALIDATE_UTF8_ENCODING
+            );
+            $this->fail('ISO 8859-15 "abcdé should not pass validation.');
+        } catch (InvalidEncodingException $e) {
+            $this->assertContains('Non-UTF8 character found', $e->getMessage());
+            $this->assertContains(
+                ', end of string was found instead of a continuation octet.',
+                $e->getMessage()
+            );
+        }
+        $forbiddenOctets = array(
+            192,
+            193,
+            245,
+            255
+        );
+        foreach ($forbiddenOctets as $forbiddenOctet) {
+            try {
+                $parser->parse(
+                    '"abcd'.chr(233).chr($forbiddenOctet).'"',
+                    JsonParser::VALIDATE_UTF8_ENCODING
+                );
+                $this->fail('"abcd\d233\d'.$forbiddenOctet.'" should not pass validation.');
+            } catch (InvalidEncodingException $e) {
+                $this->assertContains('Non-UTF8 character found', $e->getMessage());
+                $this->assertContains(
+                    ' which is one of the four forbidden values (C0, C1, F5, FF).',
+                    $e->getMessage()
+                );
+            }
+            try {
+                $parser->parse(
+                    '"abcd'.chr($forbiddenOctet).'"',
+                    JsonParser::VALIDATE_UTF8_ENCODING
+                );
+                $this->fail('"abcd\d'.$forbiddenOctet.'" should not pass validation.');
+            } catch (InvalidEncodingException $e) {
+                $this->assertContains('Non-UTF8 character found', $e->getMessage());
+                $this->assertContains(
+                    ' which is one of the four forbidden values (C0, C1, F5, FF).',
+                    $e->getMessage()
+                );
+            }
+        }
+        try {
+            $parser->parse(
+                '"abcd'.chr(129).'"',
+                JsonParser::VALIDATE_UTF8_ENCODING
+            );
+            $this->fail('"abcd\d129" should not pass validation.');
+        } catch (InvalidEncodingException $e) {
+            $this->assertContains('Non-UTF8 character found', $e->getMessage());
+            $this->assertContains(
+                ' which is a continuation octet.',
+                $e->getMessage()
+            );
+        }
+        try {
+            $parser->parse(
+                '"abcd'.chr(129).'"',
+                JsonParser::VALIDATE_UTF8_ENCODING
+            );
+            $this->fail('"abcd\d129" should not pass validation.');
+        } catch (InvalidEncodingException $e) {
+            $this->assertContains('Non-UTF8 character found', $e->getMessage());
+            $this->assertContains(
+                ' which is a continuation octet.',
+                $e->getMessage()
+            );
+        }
+        for ($i = 216; $i <= 223; ++$i) {
+            try {
+                $parser->parse(
+                    '"abcd'.chr($i).chr(129).'"',
+                    JsonParser::VALIDATE_UTF8_ENCODING
+                );
+                $this->fail('"abcd\d'.$i.'\d129" should not pass validation.');
+            } catch (InvalidEncodingException $e) {
+                $this->assertContains('Non-UTF8 character found', $e->getMessage());
+                $this->assertContains(
+                    ' which is into a forbidden range of values for first octet of character.',
+                    $e->getMessage()
+                );
+            }
+            try {
+                $parser->parse(
+                    '"abcd'.chr($i).'"',
+                    JsonParser::VALIDATE_UTF8_ENCODING
+                );
+                $this->fail('"abcd\d'.$i.'" should not pass validation.');
+            } catch (InvalidEncodingException $e) {
+                $this->assertContains('Non-UTF8 character found', $e->getMessage());
+                $this->assertContains(
+                    ' which is into a forbidden range of values for first octet of character.',
+                    $e->getMessage()
+                );
+            }
+        }
+        for ($i = 245; $i <= 255; ++$i) {
+            try {
+                $parser->parse(
+                    '"abcd'.chr($i).chr(129).chr(129).chr(129).'"',
+                    JsonParser::VALIDATE_UTF8_ENCODING
+                );
+                $this->fail('"abcd\d'.$i.'\d129\d129\d129" should not pass validation.');
+            } catch (InvalidEncodingException $e) {
+                $this->assertContains('Non-UTF8 character found', $e->getMessage());
+                $this->assertContains(' which is invalid.', $e->getMessage());
+            }
+            try {
+                $parser->parse(
+                    '"abcd'.chr($i).'"',
+                    JsonParser::VALIDATE_UTF8_ENCODING
+                );
+                $this->fail('"abcd\d'.$i.'" should not pass validation.');
+            } catch (InvalidEncodingException $e) {
+                $this->assertContains('Non-UTF8 character found', $e->getMessage());
+                $this->assertContains(' which is invalid.', $e->getMessage());
+            }
+            try {
+                $parser->parse(
+                    '"abcd'.chr(195).chr($i).'"',
+                    JsonParser::VALIDATE_UTF8_ENCODING
+                );
+                $this->fail('"abcd\d195\d'.$i.'" should not pass validation.');
+            } catch (InvalidEncodingException $e) {
+                $this->assertContains('Non-UTF8 character found', $e->getMessage());
+                $this->assertContains(' which is not a continuation octet.', $e->getMessage());
+            }
         }
     }
 
