@@ -388,30 +388,30 @@ bar"}');
                 $e->getMessage()
             );
         }
-        for ($i = 216; $i <= 223; ++$i) {
+        for ($i = 160; $i <= 191; ++$i) {
             try {
                 $parser->parse(
-                    '"abcd'.chr($i).chr(129).'"',
+                    '"abcd'.chr(237).chr($i).chr(129).'"',
                     JsonParser::VALIDATE_UTF8_ENCODING
                 );
-                $this->fail('"abcd\d'.$i.'\d129" should not pass validation.');
+                $this->fail('"abcd\d237\d'.$i.'\d129" should not pass validation.');
             } catch (InvalidEncodingException $e) {
                 $this->assertContains('Non-UTF8 character found', $e->getMessage());
                 $this->assertContains(
-                    ' which is into a forbidden range of values for first octet of character.',
+                    ' which is into the forbidden range of surrogate pairs.',
                     $e->getMessage()
                 );
             }
             try {
                 $parser->parse(
-                    '"abcd'.chr($i).'"',
+                    '"abcd'.chr(237).chr($i).'"',
                     JsonParser::VALIDATE_UTF8_ENCODING
                 );
-                $this->fail('"abcd\d'.$i.'" should not pass validation.');
+                $this->fail('"abcd\d237\d'.$i.'" should not pass validation.');
             } catch (InvalidEncodingException $e) {
                 $this->assertContains('Non-UTF8 character found', $e->getMessage());
                 $this->assertContains(
-                    ' which is into a forbidden range of values for first octet of character.',
+                    ' which is into the forbidden range of surrogate pairs.',
                     $e->getMessage()
                 );
             }

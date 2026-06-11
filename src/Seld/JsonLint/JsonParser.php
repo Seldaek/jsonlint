@@ -617,7 +617,6 @@ class JsonParser
     private function validateUTF8Encoding($input)
     {
         //Fast-path
-        /* Buggy https://github.com/php/php-src/issues/22279
         if (function_exists("mb_check_encoding")) {
             if(mb_check_encoding($input, 'UTF-8')){
                 return;
@@ -627,7 +626,6 @@ class JsonParser
                 return;
             }
         }
-        */
 
         $iCurrentOctet = null;
         $iContinuationOctetNeeded = 0;
@@ -645,6 +643,7 @@ class JsonParser
         $I_CONTINUATION_OCTET_MAXIMUM = 191;
         $iCurrentContinuationOctetMinimum = $I_CONTINUATION_OCTET_MINIMUM;
         $iCurrentContinuationOctetMaximum = $I_CONTINUATION_OCTET_MAXIMUM;
+        $sMessageForContinuationOctetAboveMaximum = null;
 
         for ($i = 0, $iMax = strlen($input); $i < $iMax; ++$i) {
             $iCurrentOctet = ord($input[$i]);
@@ -733,7 +732,12 @@ class JsonParser
                         .($iOffsetInCharactersFromLineStart + 1)
                         .", has value "
                         .$iCurrentOctet
-                        ." which is not a continuation octet."
+                        .(
+                          $sMessageForContinuationOctetAboveMaximum !== null
+                          && $iCurrentOctet > $iCurrentContinuationOctetMaximum
+                          ? $sMessageForContinuationOctetAboveMaximum
+                          : " which is not a continuation octet."
+                        )
                         ." This character starts at octet "
                         .($iCharacterStartPositionFromLineStart + 1)
                         ." of the current line."
@@ -765,6 +769,7 @@ class JsonParser
                 --$iContinuationOctetNeeded;
                 $iCurrentContinuationOctetMinimum = $I_CONTINUATION_OCTET_MINIMUM;
                 $iCurrentContinuationOctetMaximum = $I_CONTINUATION_OCTET_MAXIMUM;
+                $sMessageForContinuationOctetAboveMaximum = null;
                 continue;
             }
 
@@ -823,52 +828,6 @@ class JsonParser
                 );
             }
 
-            /*
-            The definition of UTF-8 prohibits encoding character numbers between
-            U+D800 and U+DFFF.
-            D8 = 13*16 + 8  = 216 = 11010100
-            DF = 13*16 + 15 = 223 = 11010101
-            */
-            if ($iCurrentOctet >= 216 && $iCurrentOctet <= 223) {
-                throw new InvalidEncodingException(
-                    "Non-UTF8 character found on line "
-                    .$iCurrentLineNumber
-                    ."; the octet "
-                    .($iOffsetInOctetsFromLineStart + 1)
-                    .", part of the character "
-                    .($iOffsetInCharactersFromLineStart + 1)
-                    .", has value "
-                    .$iCurrentOctet
-                    ." which is into a forbidden range of values for first octet of character."
-                    ." This character starts at octet "
-                    .($iCharacterStartPositionFromLineStart + 1)
-                    ." of the current line."
-                    ." (Sequential positions without line splitting:"
-                    ." This is at character "
-                    .($iOffsetInCharactersFromStringStart + 1)
-                    ." and octet "
-                    .($iOffsetInOctetsFromStringStart + 1)
-                    ."."
-                    ." This character starts at octet "
-                    .($iCharacterStartPositionFromStringStart + 1)
-                    .".)",
-                    (string) $iCurrentOctet,
-                    array(
-                        'current_octet' => $iCurrentOctet,
-                        'continuation_octet_needed' => $iContinuationOctetNeeded,
-                        'offset_in_octets_from_string_start' => $iOffsetInOctetsFromStringStart,
-                        'offset_in_characters_from_string_start' => $iOffsetInCharactersFromStringStart,
-                        'character_start_position_from_string_start' => $iCharacterStartPositionFromStringStart,
-                        'line' => $iCurrentLineNumber,
-                        'offset_in_octets_from_line_start' => $iOffsetInOctetsFromLineStart,
-                        'offset_in_characters_from_line_start' => $iOffsetInCharactersFromLineStart,
-                        'character_start_position_from_line_start' => $iCharacterStartPositionFromLineStart,
-                        'current_continuation_octet_minimum' => $iCurrentContinuationOctetMinimum,
-                        'current_continuation_octet_maximum' => $iCurrentContinuationOctetMaximum,
-                    )
-                );
-            }
-
             if (/*$iCurrentOctet >= 192 &&*/$iCurrentOctet < 224) {
                 // 110xxxxx 10xxxxxx
                 $iContinuationOctetNeeded = 1;
@@ -882,6 +841,23 @@ class JsonParser
                          %xED %x80-9F UTF8-tail / %xEE-EF 2( UTF8-tail )
                 Notice that E0 = 224 adds a restriction on second octet.
                 Notice that ED = 237 adds a restriction on second octet.
+
+                The definition of UTF-8 prohibits encoding character numbers between
+                U+D800 and U+DFFF.
+                D8 = 13*16 + 8  = 216 = 11010100
+                DF = 13*16 + 15 = 223 = 11010101
+                216*256 = 55296       = 1101 1000 0000 0000 = D800
+                to
+                223*256 + 255 = 57343 = 1101 1111 1111 1111 = DFFF
+
+                1110xxxx
+                11101101 = 237 = ED
+
+                237,160,128
+                237,191,191
+                Thus, the whole "continuation range" is forbidden if start
+                is 237 and second octet, first continuation octet,
+                is >= 160.
                 */
                 if($iCurrentOctet === 224){
                     $iCurrentContinuationOctetMinimum = 160;
@@ -890,6 +866,9 @@ class JsonParser
                 if($iCurrentOctet === 237){
                     $iCurrentContinuationOctetMinimum = 128;  // Normal value
                     $iCurrentContinuationOctetMaximum = 159;
+                    $sMessageForContinuationOctetAboveMaximum = (
+                      " which is into the forbidden range of surrogate pairs."
+                    );
                 }
                 continue;
             }
