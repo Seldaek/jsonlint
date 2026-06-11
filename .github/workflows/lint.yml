@@ -36,7 +36,7 @@ jobs:
       - name: "Lint PHP files"
         run: |
           hasErrors=0
-          for f in $(find src/ tests/ -type f -name '*.php' ! -path '*/vendor/*' ! -path '*/Fixtures/*')
+          for f in bin/jsonlint $(find src/ tests/ -type f -name '*.php' ! -path '*/vendor/*' ! -path '*/Fixtures/*')
           do
             { error="$(php -derror_reporting=-1 -ddisplay_errors=1 -l -f $f 2>&1 1>&3 3>&-)"; } 3>&1;
             if [ "$error" != "" ]; then
