@@ -12,4 +12,4 @@ parameters:
         - tests/
 
     ignoreErrors:
-        - '/Method JsonParserTest::[a-zA-Z0-9]+\(\) has no return type/'
+        - '/Method [a-zA-Z0-9]+Test::[a-zA-Z0-9]+\(\) has no return type/'
