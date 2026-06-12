@@ -43,7 +43,8 @@ class Utf8Validator
     {
         // Fast-path
         // But before PHP 5.4 Unicode support has bugs.
-        if (PHP_VERSION_ID >= 50400) {
+        $useFastPath = PHP_VERSION_ID >= 50400;
+        if ($useFastPath) {
             if (function_exists("mb_check_encoding")) {
                 if (mb_check_encoding($input, 'UTF-8')) {
                     return;
@@ -292,6 +293,30 @@ class Utf8Validator
                     'current_continuation_octet_maximum' => $currentContinuationOctetMaximum,
                 ),
                 true
+            );
+        }
+        // The fast-path flagged this input as invalid UTF-8, yet the manual RFC 3629
+        // scan above found no fault. The two must always agree, so reaching here means
+        // the fast-path caught something the scan missed - surface it rather than
+        // silently accepting the input as valid.
+        if ($useFastPath) {
+            throw new InvalidEncodingException(
+                "Fast-path detected an error that the manual scan could not find. "
+                ."Please report it at https://github.com/Seldaek/jsonlint/issues.",
+                "0",
+                array(
+                    'current_octet' => $currentOctet,
+                    'continuation_octet_needed' => $continuationOctetNeeded,
+                    'offset_in_octets_from_string_start' => $offsetInOctetsFromStringStart,
+                    'offset_in_characters_from_string_start' => $offsetInCharactersFromStringStart,
+                    'character_start_position_from_string_start' => $characterStartPositionFromStringStart,
+                    'line' => $currentLineNumber,
+                    'offset_in_octets_from_line_start' => $offsetInOctetsFromLineStart,
+                    'offset_in_characters_from_line_start' => $offsetInCharactersFromLineStart,
+                    'character_start_position_from_line_start' => $characterStartPositionFromLineStart,
+                    'current_continuation_octet_minimum' => $currentContinuationOctetMinimum,
+                    'current_continuation_octet_maximum' => $currentContinuationOctetMaximum,
+                )
             );
         }
     }
