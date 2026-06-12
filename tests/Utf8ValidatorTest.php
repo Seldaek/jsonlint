@@ -20,13 +20,12 @@ class Utf8ValidatorTest extends TestCase
 {
     public function testValidUtf8()
     {
-        $useFastPath = Utf8Validator::getUseFastPath();
         try {
-            Utf8Validator::validate('', $useFastPath);
-            Utf8Validator::validate('abcdé', $useFastPath);                  // 2-octet character
-            Utf8Validator::validate('euro sign: € and more', $useFastPath);  // 3-octet character
-            Utf8Validator::validate('musical clef: 𝄞', $useFastPath);        // 4-octet character
-            Utf8Validator::validate("line 1\nline 2\nline 3", $useFastPath); // newline handling
+            Utf8Validator::validate('');
+            Utf8Validator::validate('abcdé');                  // 2-octet character
+            Utf8Validator::validate('euro sign: € and more');  // 3-octet character
+            Utf8Validator::validate('musical clef: 𝄞');        // 4-octet character
+            Utf8Validator::validate("line 1\nline 2\nline 3"); // newline handling
             $this->addToAssertionCount(1);
         } catch (InvalidEncodingException $e) {
             $this->fail('Valid UTF-8 should pass validation: '.$e->getMessage());
@@ -35,16 +34,15 @@ class Utf8ValidatorTest extends TestCase
 
     public function testAllErrorTypes()
     {
-        $useFastPath = Utf8Validator::getUseFastPath();
         try {
-            Utf8Validator::validate('"abcd'.chr(233).'"', $useFastPath);
+            Utf8Validator::validate('"abcd'.chr(233).'"');
             $this->fail('ISO 8859-15 "abcdé" should not pass validation.');
         } catch (InvalidEncodingException $e) {
             $this->assertContains('Non-UTF8 character found', $e->getMessage());
             $this->assertContains(' which is not a continuation octet.', $e->getMessage());
         }
         try {
-            Utf8Validator::validate('"abcd'.chr(233), $useFastPath);
+            Utf8Validator::validate('"abcd'.chr(233));
             $this->fail('ISO 8859-15 "abcdé should not pass validation.');
         } catch (InvalidEncodingException $e) {
             $this->assertContains('Non-UTF8 character found', $e->getMessage());
@@ -61,7 +59,7 @@ class Utf8ValidatorTest extends TestCase
         );
         foreach ($forbiddenOctets as $forbiddenOctet) {
             try {
-                Utf8Validator::validate('"abcd'.chr(233).chr($forbiddenOctet).'"', $useFastPath);
+                Utf8Validator::validate('"abcd'.chr(233).chr($forbiddenOctet).'"');
                 $this->fail('"abcd\d233\d'.$forbiddenOctet.'" should not pass validation.');
             } catch (InvalidEncodingException $e) {
                 $this->assertContains('Non-UTF8 character found', $e->getMessage());
@@ -71,7 +69,7 @@ class Utf8ValidatorTest extends TestCase
                 );
             }
             try {
-                Utf8Validator::validate('"abcd'.chr($forbiddenOctet).'"', $useFastPath);
+                Utf8Validator::validate('"abcd'.chr($forbiddenOctet).'"');
                 $this->fail('"abcd\d'.$forbiddenOctet.'" should not pass validation.');
             } catch (InvalidEncodingException $e) {
                 $this->assertContains('Non-UTF8 character found', $e->getMessage());
@@ -82,7 +80,7 @@ class Utf8ValidatorTest extends TestCase
             }
         }
         try {
-            Utf8Validator::validate('"abcd'.chr(129).'"', $useFastPath);
+            Utf8Validator::validate('"abcd'.chr(129).'"');
             $this->fail('"abcd\d129" should not pass validation.');
         } catch (InvalidEncodingException $e) {
             $this->assertContains('Non-UTF8 character found', $e->getMessage());
@@ -93,7 +91,7 @@ class Utf8ValidatorTest extends TestCase
         }
         for ($i = 160; $i <= 191; ++$i) {
             try {
-                Utf8Validator::validate('"abcd'.chr(237).chr($i).chr(129).'"', $useFastPath);
+                Utf8Validator::validate('"abcd'.chr(237).chr($i).chr(129).'"');
                 $this->fail('"abcd\d237\d'.$i.'\d129" should not pass validation.');
             } catch (InvalidEncodingException $e) {
                 $this->assertContains('Non-UTF8 character found', $e->getMessage());
@@ -103,7 +101,7 @@ class Utf8ValidatorTest extends TestCase
                 );
             }
             try {
-                Utf8Validator::validate('"abcd'.chr(237).chr($i).'"', $useFastPath);
+                Utf8Validator::validate('"abcd'.chr(237).chr($i).'"');
                 $this->fail('"abcd\d237\d'.$i.'" should not pass validation.');
             } catch (InvalidEncodingException $e) {
                 $this->assertContains('Non-UTF8 character found', $e->getMessage());
@@ -115,21 +113,21 @@ class Utf8ValidatorTest extends TestCase
         }
         for ($i = 246; $i < 255; ++$i) { // 245 and 255 already forbidden
             try {
-                Utf8Validator::validate('"abcd'.chr($i).chr(129).chr(129).chr(129).'"', $useFastPath);
+                Utf8Validator::validate('"abcd'.chr($i).chr(129).chr(129).chr(129).'"');
                 $this->fail('"abcd\d'.$i.'\d129\d129\d129" should not pass validation.');
             } catch (InvalidEncodingException $e) {
                 $this->assertContains('Non-UTF8 character found', $e->getMessage());
                 $this->assertContains(' which is invalid.', $e->getMessage());
             }
             try {
-                Utf8Validator::validate('"abcd'.chr($i).'"', $useFastPath);
+                Utf8Validator::validate('"abcd'.chr($i).'"');
                 $this->fail('"abcd\d'.$i.'" should not pass validation.');
             } catch (InvalidEncodingException $e) {
                 $this->assertContains('Non-UTF8 character found', $e->getMessage());
                 $this->assertContains(' which is invalid.', $e->getMessage());
             }
             try {
-                Utf8Validator::validate('"abcd'.chr(195).chr($i).'"', $useFastPath);
+                Utf8Validator::validate('"abcd'.chr(195).chr($i).'"');
                 $this->fail('"abcd\d195\d'.$i.'" should not pass validation.');
             } catch (InvalidEncodingException $e) {
                 $this->assertContains('Non-UTF8 character found', $e->getMessage());
@@ -140,11 +138,10 @@ class Utf8ValidatorTest extends TestCase
 
     public function testExceptionExposesPositionDetails()
     {
-        $useFastPath = Utf8Validator::getUseFastPath();
         try {
             // 255 (0xFF) is one of the always-forbidden octets, so the failure
             // is reported on the octet itself rather than a following one.
-            Utf8Validator::validate('ab'.chr(255), $useFastPath);
+            Utf8Validator::validate('ab'.chr(255));
             $this->fail('Invalid UTF-8 should not pass validation.');
         } catch (InvalidEncodingException $e) {
             $details = $e->getDetails();

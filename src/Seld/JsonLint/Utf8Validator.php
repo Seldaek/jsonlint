@@ -33,32 +33,17 @@ class Utf8Validator
     const CONTINUATION_OCTET_MAXIMUM = 191;
 
     /**
-     * Checks that the version of PHP allows using the fast-path.
-     *
-     * @return bool
-     */
-    public static function getUseFastPath()
-    {
-        // Before PHP 5.4, Unicode support has bugs.
-        return PHP_VERSION_ID >= 50400;
-    }
-
-    /**
      * Validates that the whole input string is valid UTF-8.
      *
      * @param  string $input
-     * @param  bool $useFastPath
      * @return void
      * @throws InvalidEncodingException if the input is not valid UTF-8
      */
-    public static function validate($input, $useFastPath = true)
+    public static function validate($input)
     {
         // Fast-path
-        if ($useFastPath && !Utf8Validator::getUseFastPath()) {
-            throw new \Exception(
-                'Fast-path is not available with version '.PHP_VERSION_ID.' of PHP.'
-            );
-        }
+        // But before PHP 5.4 Unicode support has bugs.
+        $useFastPath = PHP_VERSION_ID >= 50400;
         if ($useFastPath) {
             if (function_exists("mb_check_encoding")) {
                 if (mb_check_encoding($input, 'UTF-8')) {
@@ -310,12 +295,14 @@ class Utf8Validator
                 true
             );
         }
+        // The fast-path flagged this input as invalid UTF-8, yet the manual RFC 3629
+        // scan above found no fault. The two must always agree, so reaching here means
+        // the fast-path caught something the scan missed - surface it rather than
+        // silently accepting the input as valid.
         if ($useFastPath) {
             throw new InvalidEncodingException(
-                "Fast-path detected an error that this function couldn't found."
-                .'Please create an issue at '
-                .'"https://github.com/Seldaek/jsonlint/issues" and if possible at'
-                .'"https://github.com/LLyaudet/DevOrSysAdminScripts/issues".',
+                "Fast-path detected an error that the manual scan could not find. "
+                ."Please report it at https://github.com/Seldaek/jsonlint/issues.",
                 "0",
                 array(
                     'current_octet' => $currentOctet,
