@@ -32,7 +32,7 @@ class Utf8ValidatorTest extends TestCase
         }
     }
 
-    public function testAllErrorTypes()
+    public function testNotAContinuationOctet()
     {
         try {
             Utf8Validator::validate('"abcd'.chr(233).'"');
@@ -41,6 +41,19 @@ class Utf8ValidatorTest extends TestCase
             $this->assertContains('Non-UTF8 character found', $e->getMessage());
             $this->assertContains(' which is not a continuation octet.', $e->getMessage());
         }
+        for ($i = 246; $i < 255; ++$i) { // 245 and 255 already forbidden
+            try {
+                Utf8Validator::validate('"abcd'.chr(195).chr($i).'"');
+                $this->fail('"abcd\d195\d'.$i.'" should not pass validation.');
+            } catch (InvalidEncodingException $e) {
+                $this->assertContains('Non-UTF8 character found', $e->getMessage());
+                $this->assertContains(' which is not a continuation octet.', $e->getMessage());
+            }
+        }
+    }
+
+    public function testPrematureEndOfString()
+    {
         try {
             Utf8Validator::validate('"abcd'.chr(233));
             $this->fail('ISO 8859-15 "abcdé should not pass validation.');
@@ -51,6 +64,10 @@ class Utf8ValidatorTest extends TestCase
                 $e->getMessage()
             );
         }
+    }
+
+    public function testForbiddenOctets()
+    {
         $forbiddenOctets = array(
             192,
             193,
@@ -79,6 +96,10 @@ class Utf8ValidatorTest extends TestCase
                 );
             }
         }
+    }
+
+    public function testUnwantedContinuationOctet()
+    {
         try {
             Utf8Validator::validate('"abcd'.chr(129).'"');
             $this->fail('"abcd\d129" should not pass validation.');
@@ -89,6 +110,10 @@ class Utf8ValidatorTest extends TestCase
                 $e->getMessage()
             );
         }
+    }
+
+    public function testForbiddenSurrogatePairs()
+    {
         for ($i = 160; $i <= 191; ++$i) {
             try {
                 Utf8Validator::validate('"abcd'.chr(237).chr($i).chr(129).'"');
@@ -111,6 +136,10 @@ class Utf8ValidatorTest extends TestCase
                 );
             }
         }
+    }
+
+    public function testOtherInvalidOctetSequences()
+    {
         for ($i = 246; $i < 255; ++$i) { // 245 and 255 already forbidden
             try {
                 Utf8Validator::validate('"abcd'.chr($i).chr(129).chr(129).chr(129).'"');
@@ -125,13 +154,6 @@ class Utf8ValidatorTest extends TestCase
             } catch (InvalidEncodingException $e) {
                 $this->assertContains('Non-UTF8 character found', $e->getMessage());
                 $this->assertContains(' which is invalid.', $e->getMessage());
-            }
-            try {
-                Utf8Validator::validate('"abcd'.chr(195).chr($i).'"');
-                $this->fail('"abcd\d195\d'.$i.'" should not pass validation.');
-            } catch (InvalidEncodingException $e) {
-                $this->assertContains('Non-UTF8 character found', $e->getMessage());
-                $this->assertContains(' which is not a continuation octet.', $e->getMessage());
             }
         }
     }
